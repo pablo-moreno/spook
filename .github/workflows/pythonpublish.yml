@@ -15,12 +15,12 @@ jobs:
       run: echo $RELEASE_VERSION
     - name: Set version
       run: sed -i -- "s/<RELEASE_VERSION>/$RELEASE_VERSION/g" pyproject.toml
-    - name: Install
+    - name: Build
       uses: abatilo/actions-poetry@v1.5.0
       with:
         python_version: 3.7.4
         poetry_version: 1.0
-        args: install
+        args: build
     - name: Publish to Pypi
       uses: abatilo/actions-poetry@v1.5.0
       env:
