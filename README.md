@@ -10,25 +10,34 @@ pip install django-spook
 
 ## Usage
 
+Declare your internal model
+
+```python
+class MyModel(models.Model):
+    name = models.CharField(max_length=16)
+    age = models.IntegerField(default=0)
+```
+
 Declare a serializer class for your external service
 
 ```python
 from rest_framework import serializers
 
-class MyServiceSerializer(serializers.Serializer):
-    name = serializers.CharField()
-    age = serializers.IntegerField()
+class MyModelSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = MyModel
+        fields = ('name', 'age', )
 ```
 
 Declare a Http Service class
 
 ```python
-from django_spook.services import HttpService
+from spook.services import HttpService
 
 class MyService(HttpService):
-    serializer_class = MyServiceSerializer
+    model = MyModel
+    serializer_class = MyModelSerializer
     api_url = 'https://my.external/api'
-    
 ```
 
 And you can instance MyService class and use the methods
@@ -36,6 +45,7 @@ And you can instance MyService class and use the methods
 ```python
 service = MyService()
 
-service.list()
-
+response = service.list()
+data = response.data_set.data
+service.get_queryset(data=data)
 ```
