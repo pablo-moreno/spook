@@ -1,16 +1,11 @@
-name: Run Tests
-on: push
+name: Publish to Pypi
+on: tags
 
 jobs:
   pytest:
     name: pytest
     runs-on: ubuntu-latest
     steps:
-    - name: Check release tag
-      run: |
-        echo $RELEASE_VERSION
-        echo ${{ env.RELEASE_VERSION }}
-        sed -i -- "s/<RELEASE_VERSION>/$RELEASE_VERSION/g" pyproject.toml
     - uses: actions/checkout@master
     - name: Install
       uses: abatilo/actions-poetry@v1.5.0
@@ -18,6 +13,11 @@ jobs:
         python_version: 3.7.4
         poetry_version: 1.0
         args: install
+    - name: Check release tag
+        run: |
+          echo $RELEASE_VERSION
+          echo ${{ env.RELEASE_VERSION }}
+          sed -i -- "s/<RELEASE_VERSION>/$RELEASE_VERSION/g" pyproject.toml
     - name: Publish to Pypi
       uses: abatilo/actions-poetry@v1.5.0
       env:
