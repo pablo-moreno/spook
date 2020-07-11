@@ -1,23 +1,26 @@
 name: Publish to Pypi
-on: tags
+on:
+  release:
+    types: [created]
 
 jobs:
-  pytest:
-    name: pytest
+  publish:
+    name: publish
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@master
+    - name: Set env
+      run: echo ::set-env name=RELEASE_VERSION::$(echo ${GITHUB_REF:10})
+    - name: Check version
+      run: echo $RELEASE_VERSION
+    - name: Set version
+      run: sed -i -- "s/<RELEASE_VERSION>/$RELEASE_VERSION/g" pyproject.toml
     - name: Install
       uses: abatilo/actions-poetry@v1.5.0
       with:
         python_version: 3.7.4
         poetry_version: 1.0
         args: install
-    - name: Check release tag
-        run: |
-          echo $RELEASE_VERSION
-          echo ${{ env.RELEASE_VERSION }}
-          sed -i -- "s/<RELEASE_VERSION>/$RELEASE_VERSION/g" pyproject.toml
     - name: Publish to Pypi
       uses: abatilo/actions-poetry@v1.5.0
       env:
