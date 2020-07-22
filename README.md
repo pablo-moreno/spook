@@ -5,7 +5,7 @@ Library to interconnect multiple external HTTP APIs as Http Services
 ## Installation
 
 ```bash
-pip install django-spook
+pip install spook
 ```
 
 ## Usage
