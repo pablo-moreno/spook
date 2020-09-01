@@ -157,7 +157,7 @@ class HttpService(object):
 
         if exact_order:
             order = Case(*[
-                When(*{self.primary_key_field_name: pk, 'then': pos}) 
+                When(**{self.primary_key_field_name: pk, 'then': pos}) 
                 for pos, pk in enumerate(pks)
             ])
             results = results.order_by(order)
