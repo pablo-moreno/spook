@@ -156,7 +156,10 @@ class HttpService(object):
         results = self.get_model().objects.filter(**q)
 
         if exact_order:
-            order = Case(*[When(pk=pk, then=pos) for pos, pk in enumerate(pks)])
+            order = Case(*[
+                When(*{self.primary_key_field_name: pk, 'then': pos}) 
+                for pos, pk in enumerate(pks)
+            ])
             results = results.order_by(order)
 
         return results
