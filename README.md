@@ -46,6 +46,6 @@ And you can instance MyService class and use the methods
 service = MyService()
 
 response = service.list()
-data = response.data_set.data
+data = response.dataset.data
 service.get_queryset(data=data)
 ```

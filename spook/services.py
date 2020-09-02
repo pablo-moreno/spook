@@ -27,8 +27,8 @@ class HttpDataSet(BaseHttpDataSet, PersistanceMixin):
 
 
 class ProxyResponse(object):
-    def __init__(self, data_set, status):
-        self.data_set = data_set
+    def __init__(self, dataset, status):
+        self.dataset = dataset
         self.status = status
 
 
@@ -194,9 +194,9 @@ class HttpService(object):
         """
         response = self.http.get(url, headers=self.get_headers(), params=params)
         data = self.get_response_data(response)
-        http_queryset = HttpDataSet(data=data, serializer=self.get_serializer_class())
+        http_dataset = HttpDataSet(data=data, serializer=self.get_serializer_class())
 
-        return ProxyResponse(data_set=http_queryset, status=response.status_code)
+        return ProxyResponse(dataset=http_dataset, status=response.status_code)
 
     def post(self, data: dict, query: dict = None) -> ProxyResponse:
         """
@@ -207,9 +207,9 @@ class HttpService(object):
         """
         response = self.http.post(self.get_url(), data=data, headers=self.get_headers(), params=query)
         data = self.get_response_data(response)
-        http_queryset = HttpDataSet(data=data, serializer=self.get_serializer_class())
+        http_dataset = HttpDataSet(data=data, serializer=self.get_serializer_class())
 
-        return ProxyResponse(data_set=http_queryset, status=response.status_code)
+        return ProxyResponse(dataset=http_dataset, status=response.status_code)
 
     def create(self, data: dict, query: dict = None) -> ProxyResponse:
         return self.post(data=data, query=query)
@@ -224,9 +224,9 @@ class HttpService(object):
         """
         response = self.http.put(self.get_url(pk), data=data, headers=self.get_headers(), params=query)
         data = self.get_response_data(response)
-        http_queryset = HttpDataSet(data=data, serializer=self.get_serializer_class())
+        http_dataset = HttpDataSet(data=data, serializer=self.get_serializer_class())
 
-        return ProxyResponse(data_set=http_queryset, status=response.status_code)
+        return ProxyResponse(dataset=http_dataset, status=response.status_code)
 
     def update(self, pk: Any, data: dict, query: dict = None) -> ProxyResponse:
         return self.put(pk=pk, data=data, query=query)
@@ -240,9 +240,9 @@ class HttpService(object):
         """
         response = self.http.delete(self.get_url(pk), headers=self.get_headers(), params=query)
         data = self.get_response_data(response)
-        http_queryset = HttpDataSet(data=data, serializer=self.get_serializer_class())
+        http_dataset = HttpDataSet(data=data, serializer=self.get_serializer_class())
 
-        return ProxyResponse(data_set=http_queryset, status=response.status_code)
+        return ProxyResponse(dataset=http_dataset, status=response.status_code)
 
     def destroy(self, pk: Any, query: dict = None) -> ProxyResponse:
         return self.delete(pk=pk, query=query)
