@@ -50,7 +50,7 @@ def retrieve_product(*args, **kwargs):
     )
 
 
-class TestItWorks(ModelMixinTestCase):
+class TestHttpService(ModelMixinTestCase):
     mixins = [Product, ]
 
     def setUp(self):
