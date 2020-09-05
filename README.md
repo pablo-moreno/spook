@@ -29,15 +29,19 @@ class MyModelSerializer(serializers.ModelSerializer):
         fields = ('name', 'age', )
 ```
 
-Declare a Http Service class
+Declare a Http Service class and its manager.
 
 ```python
 from spook.services import HttpService
+from spook.managers import DatabaseDataManager
+
+class MyManager(DatabaseDataManager):
+    model = MyModel
+    serializer = MyModelSerializer
 
 class MyService(HttpService):
-    model = MyModel
-    serializer_class = MyModelSerializer
     api_url = 'https://my.external/api'
+    manager = MyManager
 ```
 
 And you can instance MyService class and use the methods
@@ -46,6 +50,6 @@ And you can instance MyService class and use the methods
 service = MyService()
 
 response = service.list()
-data = response.dataset.data
-service.get_queryset(data=data)
+data = response.queryset
+queryset = data.get_queryset()
 ```
