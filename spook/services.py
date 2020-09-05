@@ -1,34 +1,87 @@
-import re
 import requests
+from django.db.models import QuerySet, Case, When, Model
+from typing import Union, Any, Type
+
+from rest_framework.serializers import Serializer
+
 from . import settings
-from django.db.models import QuerySet, Case, When
-from typing import Union, Any
+from .utils import get_model_slug
 
 
-class PersistanceMixin(object):
-    def save(self):
+class DataManager(object):
+    primary_key_field_name: str = 'pk'
+    model: Type[Model] = None
+    serializer: Type[Serializer] = None
+
+    def __init__(self, data):
+        self.data = data
+        assert self.serializer is not None, 'You need to specify the serializer property'
+        assert self.model is not None, 'You need to specify the model property'
+
+    def get_model(self) -> Type[Model]:
+        if not self.model:
+            raise Exception('You need to override .get_model() method or provide a default model.')
+
+        return self.model
+
+    def get_serializer_class(self) -> Type[Serializer]:
+        if not self.serializer:
+            raise Exception('You need to override .get_serializer() method or provide a default serializer.')
+
+        return self.serializer
+
+    def get_queryset(self, exact_order=True, as_pk_list=False) -> Union[list, QuerySet]:
+        raise NotImplementedError
+
+    def filter(self, fn):
+        return filter(fn, self.data)
+
+    def persist(self):
+        raise NotImplementedError
+
+
+class DatabaseDataManager(DataManager):
+    def get_queryset(self, exact_order=True, as_pk_list=False) -> Union[list, QuerySet]:
+        """
+            Returns the queryset given the received data
+        """
+        pks = [item[self.primary_key_field_name] for item in self.data]
+
+        if as_pk_list:
+            return pks
+
+        q = {
+            f'{self.primary_key_field_name}__in': pks
+        }
+        results = self.get_model().objects.filter(**q)
+
+        if exact_order:
+            order = Case(*[
+                When(**{self.primary_key_field_name: pk, 'then': pos})
+                for pos, pk in enumerate(pks)
+            ])
+            results = results.order_by(order)
+
+        return results
+
+    def save(self, data):
+        serialized = self.serializer(data=data)
+        serialized.is_valid(raise_exception=True)
+        serialized.save()
+
+    def persist(self):
         is_list = isinstance(self.data, list)
 
         if is_list:
             for item in self.data:
-                self.serializer(data=item).save()
+                self.save(data=item)
         else:
-            self.serializer(data=self.data).save()
-
-
-class BaseHttpDataSet(PersistanceMixin):
-    def __init__(self, data, serializer):
-        self.data = data
-        self.serializer = serializer
-
-
-class HttpDataSet(BaseHttpDataSet, PersistanceMixin):
-    pass
+            self.save(data=self.data)
 
 
 class ProxyResponse(object):
-    def __init__(self, dataset, status):
-        self.dataset = dataset
+    def __init__(self, queryset, status):
+        self.queryset = queryset
         self.status = status
 
 
@@ -37,12 +90,10 @@ class HttpService(object):
         Http Service class to perform requests to an external API, fetch the results, validate them in
         the database and simplify the translation into a local queryset.
     """
-    model = None
-    serializer_class = None
+    manager: Type[DataManager] = None
     api_url: str = settings.EXTERNAL_API_URL
     authorization_header: str = settings.AUTHORIZATION_HEADER
     authorization_header_name: str = settings.AUTHORIZATION_HEADER_NAME
-    primary_key_field_name: str = 'pk'
 
     def __init__(self):
         self.token = None
@@ -55,40 +106,24 @@ class HttpService(object):
     def set_token(self, token: str):
         self.token = token
 
-    def get_serializer_class(self):
-        if not self.model:
-            raise Exception('You need to override .get_serializer_class() method or '
-                            'provide a default serializer_class.')
+    def get_manager_class(self) -> Type[DataManager]:
+        if not self.manager:
+            raise Exception('You need to override .get_manager_class() method or '
+                            'provide a default manager_class.')
 
-        return self.serializer_class
+        return self.manager
 
-    def set_serializer_class(self, serializer_class):
-        self.serializer_class = serializer_class
+    def get_serializer_class(self) -> Type[Serializer]:
+        return self.get_manager_class().serializer
 
-    def get_model(self):
-        if not self.model:
-            raise Exception('You need to override .get_model() method or provide a default model.')
-
-        return self.model
-
-    def pluralize(self, text: str) -> str:
-        """
-            Pluralizes a word depending on the last letter of the word
-        """
-        return f'{text}ies' if text[-1] == 'y' else f'{text}s'
-
-    def get_model_slug(self) -> str:
-        """
-            Returns the model slug
-        """
-        slug = re.sub('(?<=.)([A-Z]+)', '-\\1', self.get_model().__name__).lower()
-        return self.pluralize(slug)
+    def get_model(self) -> Type[Model]:
+        return self.get_manager_class().model
 
     def get_url(self, *url_params) -> str:
         """
             Returns the url based on the url params
         """
-        params = (self.api_url, self.get_model_slug(), *url_params)
+        params = (self.api_url, get_model_slug(self.get_model()), *url_params)
         return '/'.join([str(param) for param in params if param != ''])
 
     def get_headers(self) -> dict:
@@ -104,23 +139,6 @@ class HttpService(object):
             }
             return headers
         return self.headers
-
-    def serialize(self, instance, many=False):
-        """
-            Returns the serialized data given the model instance
-        """
-        serializer = self.get_serializer_class()
-        serialized = serializer(instance, many=many)
-        serialized.is_valid(raise_exception=True)
-
-        return serialized.validated_data
-
-    def deserialize(self, data, many=False) -> Union[dict, list, QuerySet]:
-        """
-            Returns the deserialized data given the data
-        """
-        serializer = self.get_serializer_class()
-        return serializer(data=data, many=many).validated_data
 
     def get_response_data(self, response):
         if response.status_code not in range(200, 400):
@@ -140,29 +158,6 @@ class HttpService(object):
         """
         is_list = isinstance(data, list)
         return data, is_list
-
-    def get_queryset(self, data: list, exact_order=True, as_pk_list=False) -> Union[list, QuerySet]:
-        """
-            Returns the queryset given the received data
-        """
-        pks = [item[self.primary_key_field_name] for item in data]
-
-        if as_pk_list:
-            return pks
-
-        q = {
-            f'{self.primary_key_field_name}__in': pks
-        }
-        results = self.get_model().objects.filter(**q)
-
-        if exact_order:
-            order = Case(*[
-                When(**{self.primary_key_field_name: pk, 'then': pos}) 
-                for pos, pk in enumerate(pks)
-            ])
-            results = results.order_by(order)
-
-        return results
 
     def list(self, **params) -> ProxyResponse:
         """
@@ -194,9 +189,10 @@ class HttpService(object):
         """
         response = self.http.get(url, headers=self.get_headers(), params=params)
         data = self.get_response_data(response)
-        http_dataset = HttpDataSet(data=data, serializer=self.get_serializer_class())
+        manager = self.get_manager_class()
+        queryset = manager(data=data)
 
-        return ProxyResponse(dataset=http_dataset, status=response.status_code)
+        return ProxyResponse(queryset=queryset, status=response.status_code)
 
     def post(self, data: dict, query: dict = None) -> ProxyResponse:
         """
@@ -207,9 +203,10 @@ class HttpService(object):
         """
         response = self.http.post(self.get_url(), data=data, headers=self.get_headers(), params=query)
         data = self.get_response_data(response)
-        http_dataset = HttpDataSet(data=data, serializer=self.get_serializer_class())
+        manager = self.get_manager_class()
+        queryset = manager(data=data)
 
-        return ProxyResponse(dataset=http_dataset, status=response.status_code)
+        return ProxyResponse(queryset=queryset, status=response.status_code)
 
     def create(self, data: dict, query: dict = None) -> ProxyResponse:
         return self.post(data=data, query=query)
@@ -224,9 +221,10 @@ class HttpService(object):
         """
         response = self.http.put(self.get_url(pk), data=data, headers=self.get_headers(), params=query)
         data = self.get_response_data(response)
-        http_dataset = HttpDataSet(data=data, serializer=self.get_serializer_class())
+        manager = self.get_manager_class()
+        queryset = manager(data=data)
 
-        return ProxyResponse(dataset=http_dataset, status=response.status_code)
+        return ProxyResponse(queryset=queryset, status=response.status_code)
 
     def update(self, pk: Any, data: dict, query: dict = None) -> ProxyResponse:
         return self.put(pk=pk, data=data, query=query)
@@ -240,9 +238,10 @@ class HttpService(object):
         """
         response = self.http.delete(self.get_url(pk), headers=self.get_headers(), params=query)
         data = self.get_response_data(response)
-        http_dataset = HttpDataSet(data=data, serializer=self.get_serializer_class())
+        manager = self.get_manager_class()
+        queryset = manager(data=data)
 
-        return ProxyResponse(dataset=http_dataset, status=response.status_code)
+        return ProxyResponse(queryset=queryset, status=response.status_code)
 
     def destroy(self, pk: Any, query: dict = None) -> ProxyResponse:
         return self.delete(pk=pk, query=query)
