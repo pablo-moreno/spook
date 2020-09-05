@@ -21,7 +21,7 @@ class HttpServiceListView(ListAPIView, BaseHttpServiceView):
         params = request.query_params
         response = service.list(**params)
 
-        return Response(data=response.data_set.data, status=response.status)
+        return Response(data=response.dataset.data, status=response.status)
 
 
 class HttpServiceRetrieveView(RetrieveAPIView, BaseHttpServiceView):
@@ -31,7 +31,7 @@ class HttpServiceRetrieveView(RetrieveAPIView, BaseHttpServiceView):
         params = request.query_params
         response = service.retrieve(pk, **params)
 
-        return Response(data=response.data_set.data, status=response.status)
+        return Response(data=response.dataset.data, status=response.status)
 
 
 class HttpServiceCreateView(CreateAPIView, BaseHttpServiceView):
@@ -39,7 +39,7 @@ class HttpServiceCreateView(CreateAPIView, BaseHttpServiceView):
         service = self.get_service()
         response = service.post(data=request.data, query=request.query_params)
 
-        return Response(data=response.data_set.data, status=response.status)
+        return Response(data=response.dataset.data, status=response.status)
 
 
 class HttpServicePutView(UpdateAPIView, BaseHttpServiceView):
@@ -48,7 +48,7 @@ class HttpServicePutView(UpdateAPIView, BaseHttpServiceView):
         service = self.get_service()
         response = service.put(pk=pk, data=request.data, query=request.query_params)
 
-        return Response(data=response.data_set.data, status=response.status)
+        return Response(data=response.dataset.data, status=response.status)
 
 
 class HttpServiceDestroyView(DestroyAPIView, BaseHttpServiceView):
@@ -57,7 +57,7 @@ class HttpServiceDestroyView(DestroyAPIView, BaseHttpServiceView):
         service = self.get_service()
         response = service.delete(pk=pk, query=request.query_params)
 
-        return Response(data=response.data_set.data, status=response.status)
+        return Response(data=response.dataset.data, status=response.status)
 
 
 class HttpServiceRetrieveUpdateView(HttpServiceRetrieveView, HttpServicePutView):
