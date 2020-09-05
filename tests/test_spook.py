@@ -1,9 +1,9 @@
 from django.db import models
-from rest_framework.test import APITestCase
 from unittest.mock import patch
-from spook.services import HttpService
+from spook.services import HttpService, DatabaseDataManager
 from rest_framework import serializers
-from .utils import MockedResponse
+
+from .utils import MockedResponse, ModelMixinTestCase
 
 
 PRODUCTS = [
@@ -22,15 +22,20 @@ class Product(models.Model):
     name = models.CharField(max_length=48)
 
 
-class ProductSerializer(serializers.Serializer):
-    id = serializers.IntegerField()
-    name = serializers.CharField(max_length=48)
+class ProductSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Product
+        fields = ['id', 'name']
+
+
+class ProductManager(DatabaseDataManager):
+    model = Product
+    serializer = ProductSerializer
 
 
 class ProductService(HttpService):
     api_url = 'http://external/api'
-    model = Product
-    serializer_class = ProductSerializer
+    manager = ProductManager
 
 
 def get_mocked_products(*args, **kwargs):
@@ -45,7 +50,9 @@ def retrieve_product(*args, **kwargs):
     )
 
 
-class TestItWorks(APITestCase):
+class TestItWorks(ModelMixinTestCase):
+    mixins = [Product, ]
+
     def setUp(self):
         self.product_service = ProductService()
 
@@ -53,12 +60,21 @@ class TestItWorks(APITestCase):
     def test_list_products(self):
         response = self.product_service.list()
         assert response.status == 200
-        data = response.dataset.data
+        queryset = response.queryset
+        data = queryset.data
         assert data[0]['name'] == 'Star Wars Collection'
+
+    @patch('requests.get', get_mocked_products)
+    def test_persistance(self):
+        response = self.product_service.list()
+        assert response.status == 200
+        queryset = response.queryset
+        queryset.persist()
+        assert Product.objects.count() == 2
 
     @patch('requests.get', retrieve_product)
     def test_retrieve_product(self):
         response = self.product_service.retrieve('1')
         assert response.status == 200
-        data = response.dataset.data
+        data = response.queryset.data
         assert data['name'] == 'Star Wars Collection'
