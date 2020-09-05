@@ -1,6 +1,7 @@
 from django.db import models
 from unittest.mock import patch
-from spook.services import HttpService, DatabaseDataManager
+from spook.services import HttpService
+from spook.managers import DatabaseDataManager
 from rest_framework import serializers
 
 from .utils import MockedResponse, ModelMixinTestCase
