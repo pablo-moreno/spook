@@ -1,5 +1,7 @@
 # Django Spook
 
+[![codecov](https://codecov.io/gh/pablo-moreno/spook/branch/master/graph/badge.svg?token=6ZAHAHZG7Z)](https://codecov.io/gh/pablo-moreno/spook/)
+
 Library to interconnect multiple external HTTP APIs as Http Services
 
 ## Installation
