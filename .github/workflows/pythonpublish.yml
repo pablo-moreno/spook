@@ -10,7 +10,7 @@ jobs:
       matrix:
         python-version: [3.7, 3.8]
         poetry-version: [1.0.10]
-        os: [ubuntu-18.04, macos-latest, windows-latest]
+        os: [ubuntu-20.04]
     runs-on: ${{ matrix.os }}
 
     steps:
