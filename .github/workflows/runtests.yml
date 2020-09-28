@@ -22,8 +22,8 @@ jobs:
       - name: Setup dependencies
         run: poetry install
       - name: Run tests
-        run: poetry run coverage run runtests.py
-      - name: Upload to codecov
-        env:
-          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
-        run: bash <(curl -s https://codecov.io/bash)
+        run: poetry run coverage run runtests.py && poetry run coverage report && bash <(curl -s https://codecov.io/bash)
+#      - name: Upload to codecov
+#        env:
+#          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+#        run: bash <(curl -s https://codecov.io/bash)
