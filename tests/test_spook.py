@@ -32,6 +32,7 @@ class ProductSerializer(serializers.ModelSerializer):
 class ProductManager(DatabaseDataManager):
     model = Product
     serializer = ProductSerializer
+    primary_key_field_name = 'id'
 
 
 class ProductService(HttpService):
@@ -72,6 +73,25 @@ class TestHttpService(ModelMixinTestCase):
         queryset = response.queryset
         queryset.persist()
         assert Product.objects.count() == 2
+
+    @patch('requests.get', get_mocked_products)
+    def test_manager_queryset(self):
+        response = self.product_service.list()
+        assert response.status == 200
+        queryset = response.queryset
+        queryset.persist()
+        persisted_qs = queryset.get_queryset()
+        assert Product.objects.count() == persisted_qs.count()
+
+    @patch('requests.get', get_mocked_products)
+    def test_manager_queryset_as_pk_list(self):
+        response = self.product_service.list()
+        assert response.status == 200
+        queryset = response.queryset
+        queryset.persist()
+        pk_list = queryset.get_queryset(as_pk_list=True)
+        assert Product.objects.count() == len(pk_list)
+        assert pk_list == [1, 2]
 
     @patch('requests.get', retrieve_product)
     def test_retrieve_product(self):
