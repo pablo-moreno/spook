@@ -5,28 +5,27 @@ on:
 
 jobs:
   publish:
-    name: publish
-    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: true
+      matrix:
+        python-version: [3.6, 3.7, 3.8]
+        poetry-version: [1.0, 1.0.10]
+        os: [ubuntu-18.04, macos-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+
     steps:
-    - uses: actions/checkout@master
-    - name: Set env
-      run: echo ::set-env name=RELEASE_VERSION::$(echo ${GITHUB_REF:10})
-    - name: Check version
-      run: echo $RELEASE_VERSION
-    - name: Set version
-      run: sed -i -- "s/<RELEASE_VERSION>/$RELEASE_VERSION/g" pyproject.toml
-    - name: Build
-      uses: abatilo/actions-poetry@v1.5.0
-      with:
-        python_version: 3.7.4
-        poetry_version: 1.0
-        args: build
-    - name: Publish to Pypi
-      uses: abatilo/actions-poetry@v1.5.0
-      env:
-        PYPI_USERNAME: ${{ secrets.PYPI_USERNAME }}
-        PYPI_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
-      with:
-        python_version: 3.7.4
-        poetry_version: 1.0
-        args: publish -u $PYPI_USERNAME -p $PYPI_PASSWORD
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Run image
+        uses: abatilo/actions-poetry@v2.0.0
+        with:
+          poetry-version: ${{ matrix.poetry-version }}
+      - name: Build
+        run: poetry build
+      - name: Publish to Pypi
+        env:
+          PYPI_USERNAME: ${{ secrets.PYPI_USERNAME }}
+          PYPI_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
+        run: poetry publish -u $PYPI_USERNAME -p $PYPI_PASSWORD
