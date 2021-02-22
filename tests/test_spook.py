@@ -1,6 +1,6 @@
 from django.db import models
 from unittest.mock import patch
-from spook.services import HttpService
+from spook.resources import APIResource
 from spook.managers import DatabaseDataManager
 from rest_framework import serializers
 
@@ -35,7 +35,7 @@ class ProductManager(DatabaseDataManager):
     primary_key_field_name = 'id'
 
 
-class ProductService(HttpService):
+class ProductService(APIResource):
     api_url = 'http://external/api'
     manager = ProductManager
 
@@ -52,7 +52,7 @@ def retrieve_product(*args, **kwargs):
     )
 
 
-class TestHttpService(ModelMixinTestCase):
+class TestAPIResource(ModelMixinTestCase):
     mixins = [Product, ]
 
     def setUp(self):

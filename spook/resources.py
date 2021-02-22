@@ -5,13 +5,13 @@ from typing import Union, Any, Type
 
 from . import settings
 from .managers import DataManager
-from .responses import ProxyResponse
+from .responses import APIResourceResponse
 from .utils import get_model_slug
 
 
-class HttpService(object):
+class APIResource(object):
     """
-        Http Service class to perform requests to an external API.
+        API resource class to perform requests to an external API.
     """
     manager: Type[DataManager] = None
     api_url: str = settings.EXTERNAL_API_URL
@@ -81,7 +81,7 @@ class HttpService(object):
         is_list = isinstance(data, list)
         return data, is_list
 
-    def list(self, **params) -> ProxyResponse:
+    def list(self, **params) -> APIResourceResponse:
         """
             Retrieves a list of items
         :param params: Query params for the url
@@ -91,7 +91,7 @@ class HttpService(object):
 
         return self.get(url, **params)
 
-    def retrieve(self, pk: Any, **params) -> ProxyResponse:
+    def retrieve(self, pk: Any, **params) -> APIResourceResponse:
         """
             Retrieves an item given its pk or uid
         :param pk: Unique ID of the item
@@ -102,7 +102,7 @@ class HttpService(object):
 
         return self.get(url, **params)
 
-    def get(self, url: str, **params) -> ProxyResponse:
+    def get(self, url: str, **params) -> APIResourceResponse:
         """
             Performs a GET request to a server URL
         :param url: The URL
@@ -114,9 +114,9 @@ class HttpService(object):
         manager = self.get_manager_class()
         queryset = manager(data=data)
 
-        return ProxyResponse(queryset=queryset, status=response.status_code)
+        return APIResourceResponse(queryset=queryset, status=response.status_code)
 
-    def post(self, data: dict, query: dict = None) -> ProxyResponse:
+    def post(self, data: dict, query: dict = None) -> APIResourceResponse:
         """
             Performs a POST request to the server
         :param data: Data attached
@@ -128,12 +128,12 @@ class HttpService(object):
         manager = self.get_manager_class()
         queryset = manager(data=data)
 
-        return ProxyResponse(queryset=queryset, status=response.status_code)
+        return APIResourceResponse(queryset=queryset, status=response.status_code)
 
-    def create(self, data: dict, query: dict = None) -> ProxyResponse:
+    def create(self, data: dict, query: dict = None) -> APIResourceResponse:
         return self.post(data=data, query=query)
 
-    def put(self, pk: Any, data: dict, query: dict = None) -> ProxyResponse:
+    def put(self, pk: Any, data: dict, query: dict = None) -> APIResourceResponse:
         """
             Performs a PUT request to the server
         :param pk: Primary key of the object to update
@@ -146,12 +146,12 @@ class HttpService(object):
         manager = self.get_manager_class()
         queryset = manager(data=data)
 
-        return ProxyResponse(queryset=queryset, status=response.status_code)
+        return APIResourceResponse(queryset=queryset, status=response.status_code)
 
-    def update(self, pk: Any, data: dict, query: dict = None) -> ProxyResponse:
+    def update(self, pk: Any, data: dict, query: dict = None) -> APIResourceResponse:
         return self.put(pk=pk, data=data, query=query)
 
-    def delete(self, pk: Any, query: dict = None) -> ProxyResponse:
+    def delete(self, pk: Any, query: dict = None) -> APIResourceResponse:
         """
             Performs a DELETE request to the server
         :param pk: Primary key of the object to update
@@ -163,7 +163,7 @@ class HttpService(object):
         manager = self.get_manager_class()
         queryset = manager(data=data)
 
-        return ProxyResponse(queryset=queryset, status=response.status_code)
+        return APIResourceResponse(queryset=queryset, status=response.status_code)
 
-    def destroy(self, pk: Any, query: dict = None) -> ProxyResponse:
+    def destroy(self, pk: Any, query: dict = None) -> APIResourceResponse:
         return self.delete(pk=pk, query=query)
