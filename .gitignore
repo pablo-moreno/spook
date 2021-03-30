@@ -147,5 +147,5 @@ dmypy.json
 # Project specific
 poetry.lock
 .idea/
-
+**/package-lock.json
 # End of https://www.toptal.com/developers/gitignore/api/django

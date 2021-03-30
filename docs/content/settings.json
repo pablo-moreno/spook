@@ -1,0 +1,10 @@
+{
+  "title": "Spook",
+  "url": "spook.github.io",
+  "logo": {
+    "light": "/logo-light.svg",
+    "dark": "/logo-dark.svg"
+  },
+  "github": "pablo-moreno/spook",
+  "twitter": "_spookydev_"
+}
