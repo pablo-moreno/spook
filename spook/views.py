@@ -3,7 +3,6 @@ from typing import Type
 from rest_framework.generics import (
     ListAPIView, RetrieveAPIView, CreateAPIView, UpdateAPIView, DestroyAPIView
 )
-from rest_framework.viewsets import GenericViewSet, ViewSet
 from rest_framework.response import Response
 from .resources import APIResource
 
@@ -24,7 +23,7 @@ class APIResourceListView(ListAPIView, APIResourceMixin):
         params = request.query_params
         response = resource().list(**params)
 
-        return Response(data=response.queryset.data, status=response.status)
+        return Response(data=response.data, status=response.status)
 
 
 class APIResourceRetrieveView(RetrieveAPIView, APIResourceMixin):
@@ -34,7 +33,7 @@ class APIResourceRetrieveView(RetrieveAPIView, APIResourceMixin):
         params = request.query_params
         response = resource().retrieve(pk, **params)
 
-        return Response(data=response.queryset.data, status=response.status)
+        return Response(data=response.data, status=response.status)
 
 
 class APIResourceCreateView(CreateAPIView, APIResourceMixin):
@@ -42,7 +41,7 @@ class APIResourceCreateView(CreateAPIView, APIResourceMixin):
         resource = self.get_resource()
         response = resource().post(data=request.data, query=request.query_params)
 
-        return Response(data=response.queryset.data, status=response.status)
+        return Response(data=response.data, status=response.status)
 
 
 class APIResourcePutView(UpdateAPIView, APIResourceMixin):
@@ -51,7 +50,7 @@ class APIResourcePutView(UpdateAPIView, APIResourceMixin):
         resource = self.get_resource()
         response = resource().put(pk=pk, data=request.data, query=request.query_params)
 
-        return Response(data=response.queryset.data, status=response.status)
+        return Response(data=response.data, status=response.status)
 
 
 class APIResourceDestroyView(DestroyAPIView, APIResourceMixin):
@@ -60,7 +59,7 @@ class APIResourceDestroyView(DestroyAPIView, APIResourceMixin):
         resource = self.get_resource()
         response = resource().delete(pk=pk, query=request.query_params)
 
-        return Response(data=response.queryset.data, status=response.status)
+        return Response(data=response.data, status=response.status)
 
 
 class APIResourceRetrieveUpdateView(APIResourceRetrieveView, APIResourcePutView):
