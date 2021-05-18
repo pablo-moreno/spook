@@ -8,6 +8,7 @@ from spook.resources import APIResource
 from rest_framework import serializers
 
 from spook.validators import InputValidator
+from spook.utils import pluralize, get_model_slug
 from .utils import MockedResponse, ModelMixinTestCase
 
 
@@ -82,6 +83,9 @@ class TestAPIResource(ModelMixinTestCase):
 
     def setUp(self):
         self.product_service = ProductService()
+
+    def test_get_model_slug(self):
+        assert get_model_slug(Product) == 'products'
 
     @patch('spook.resources.requests.get', get_mocked_products)
     def test_list_products(self):
