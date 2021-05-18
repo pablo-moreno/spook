@@ -13,46 +13,55 @@ pip install spook
 
 ## Usage
 
-Declare your internal model
-
-```python
-class MyModel(models.Model):
-    name = models.CharField(max_length=16)
-    age = models.IntegerField(default=0)
-```
-
-Declare a serializer class for your external service
+Declare a serializer class for your input validation
 
 ```python
 from rest_framework import serializers
 
-class MyModelSerializer(serializers.ModelSerializer):
+class MySerializer(serializers.ModelSerializer):
+    name = serializers.CharField()
+    age = serializers.IntegerField()
+    
     class Meta:
-        model = MyModel
         fields = ('name', 'age', )
 ```
 
-Declare a Http Service class and its manager.
+Declare an InputValidator
+
+```python
+from spook.validators import InputValidator
+
+
+class MyResourceInputValidator(InputValidator):
+    serializer_class = MySerializer
+```
+
+
+Declare an API Resource class.
 
 ```python
 from spook.resources import APIResource
-from spook.managers import DatabaseDataManager
 
-class MyManager(DatabaseDataManager):
-    model = MyModel
-    serializer = MyModelSerializer
 
 class MyResource(APIResource):
     api_url = 'https://my.external/api'
-    manager = MyManager
+    validator = MyResourceInputValidator
 ```
 
-And you can instance MyService class and use the methods
+Now you can instance MyResource class and use the methods
 
 ```python
 resource = MyResource()
 
-response = resource.list()
-data = response.queryset
-queryset = data.get_queryset()
+# List resources
+resource.list()
+
+# Create resource
+resource.create({'name': 'Pablo', 'age': 28})
+
+# Update resource
+resource.update(pk=1, data={'name': 'Pablo Moreno'})
+
+# Delete resource
+resource.delete(pk=1)
 ```
