@@ -1,4 +1,4 @@
 class APIResourceResponse(object):
-    def __init__(self, queryset, status):
-        self.queryset = queryset
+    def __init__(self, data, status):
+        self.data = data
         self.status = status
