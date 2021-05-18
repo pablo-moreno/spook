@@ -87,9 +87,6 @@ class APIResource(object):
     def validate(self, data: dict) -> dict:
         return self.validator().validate(data)
 
-    def validate_input(self, input_data):
-        return input_data
-
     def list(self, **params) -> APIResourceResponse:
         """
             Retrieves a list of items
@@ -130,7 +127,7 @@ class APIResource(object):
         :param query: Extra querystring as a dict
         :return: JSON response as a dict
         """
-        validated_data = self.validate_input(input_data=data)
+        validated_data = self.validate(data)
         response = self.http.post(self.get_url(), data=validated_data, headers=self.get_headers(), params=query)
         data = self.get_response_data(response)
 
@@ -147,6 +144,7 @@ class APIResource(object):
         :param query: Query params
         :return: JSON response as a dict
         """
+        self.validate(data)
         response = self.http.put(self.get_url(pk), data=data, headers=self.get_headers(), params=query)
         data = self.get_response_data(response)
 

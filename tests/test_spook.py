@@ -1,5 +1,9 @@
+import pytest
 from django.db import models
 from unittest.mock import patch
+
+from rest_framework.exceptions import ValidationError
+
 from spook.resources import APIResource
 from rest_framework import serializers
 
@@ -106,3 +110,17 @@ class TestAPIResource(ModelMixinTestCase):
         assert response.status == 200
         data = response.data
         assert data['name'] == UPDATED_PRODUCT.get('name')
+
+    @patch('spook.resources.requests.post', create_product)
+    def test_create_invalid_input(self):
+        with pytest.raises(ValidationError):
+            self.product_service.create({
+                'wrong': 'input'
+            })
+
+    @patch('spook.resources.requests.put', update_product)
+    def test_update_invalid_input(self):
+        with pytest.raises(ValidationError):
+            self.product_service.update(3, {
+                'wrong': 'input'
+            })
