@@ -1,22 +1,24 @@
+import warnings
+
 import requests
-from django.db.models import Model
 from rest_framework.serializers import Serializer
-from typing import Union, Any, Type
+from typing import Union, Any, Type, List
 
 from . import settings
-from .managers import DataManager
+from .pagination import Pagination
 from .responses import APIResourceResponse
-from .utils import get_model_slug
+from .validators import InputValidator
 
 
 class APIResource(object):
     """
         API resource class to perform requests to an external API.
     """
-    manager: Type[DataManager] = None
     api_url: str = settings.EXTERNAL_API_URL
     authorization_header: str = settings.AUTHORIZATION_HEADER
     authorization_header_name: str = settings.AUTHORIZATION_HEADER_NAME
+    pagination_class: Type[Pagination] = None
+    validator: Type[InputValidator] = None
 
     def __init__(self):
         self.token = None
@@ -29,25 +31,15 @@ class APIResource(object):
     def set_token(self, token: str):
         self.token = token
 
-    def get_manager_class(self) -> Type[DataManager]:
-        if not self.manager:
-            raise Exception('You need to override .get_manager_class() method or '
-                            'provide a default manager_class.')
-
-        return self.manager
-
-    def get_serializer_class(self) -> Type[Serializer]:
-        return self.get_manager_class().serializer
-
-    def get_model(self) -> Type[Model]:
-        return self.get_manager_class().model
-
     def get_url(self, *url_params) -> str:
         """
             Returns the url based on the url params
         """
-        params = (self.api_url, get_model_slug(self.get_model()), *url_params)
+        params = (self.api_url, *url_params)
         return '/'.join([str(param) for param in params if param != ''])
+
+    def get_pagination_class(self):
+        return self.pagination_class
 
     def get_headers(self) -> dict:
         """
@@ -68,10 +60,6 @@ class APIResource(object):
 
         data, is_list = self.map_response(response.json())
 
-        serializer = self.get_serializer_class()
-        results = serializer(data=data, many=is_list)
-        results.is_valid(raise_exception=True)
-
         return data
 
     def map_response(self, data: Union[dict, list]) -> (Union[dict, list], bool):
@@ -80,6 +68,24 @@ class APIResource(object):
         """
         is_list = isinstance(data, list)
         return data, is_list
+
+    def get_paginated_response(self, data: Union[dict, list]) -> Union[dict, list]:
+        pagination_class = self.get_pagination_class()
+
+        if not pagination_class:
+            return data
+
+        data, is_list = self.map_response(data)
+
+        if not is_list:
+            return data
+
+        pagination_class = self.get_pagination_class()
+
+        return pagination_class().paginate(data)
+
+    def validate(self, data: dict) -> dict:
+        return self.validator().validate(data)
 
     def list(self, **params) -> APIResourceResponse:
         """
@@ -111,10 +117,8 @@ class APIResource(object):
         """
         response = self.http.get(url, headers=self.get_headers(), params=params)
         data = self.get_response_data(response)
-        manager = self.get_manager_class()
-        queryset = manager(data=data)
 
-        return APIResourceResponse(queryset=queryset, status=response.status_code)
+        return APIResourceResponse(data=data, status=response.status_code)
 
     def post(self, data: dict, query: dict = None) -> APIResourceResponse:
         """
@@ -123,12 +127,11 @@ class APIResource(object):
         :param query: Extra querystring as a dict
         :return: JSON response as a dict
         """
-        response = self.http.post(self.get_url(), data=data, headers=self.get_headers(), params=query)
+        validated_data = self.validate(data)
+        response = self.http.post(self.get_url(), data=validated_data, headers=self.get_headers(), params=query)
         data = self.get_response_data(response)
-        manager = self.get_manager_class()
-        queryset = manager(data=data)
 
-        return APIResourceResponse(queryset=queryset, status=response.status_code)
+        return APIResourceResponse(data=data, status=response.status_code)
 
     def create(self, data: dict, query: dict = None) -> APIResourceResponse:
         return self.post(data=data, query=query)
@@ -141,12 +144,11 @@ class APIResource(object):
         :param query: Query params
         :return: JSON response as a dict
         """
+        self.validate(data)
         response = self.http.put(self.get_url(pk), data=data, headers=self.get_headers(), params=query)
         data = self.get_response_data(response)
-        manager = self.get_manager_class()
-        queryset = manager(data=data)
 
-        return APIResourceResponse(queryset=queryset, status=response.status_code)
+        return APIResourceResponse(data=data, status=response.status_code)
 
     def update(self, pk: Any, data: dict, query: dict = None) -> APIResourceResponse:
         return self.put(pk=pk, data=data, query=query)
@@ -160,10 +162,8 @@ class APIResource(object):
         """
         response = self.http.delete(self.get_url(pk), headers=self.get_headers(), params=query)
         data = self.get_response_data(response)
-        manager = self.get_manager_class()
-        queryset = manager(data=data)
 
-        return APIResourceResponse(queryset=queryset, status=response.status_code)
+        return APIResourceResponse(data=data, status=response.status_code)
 
     def destroy(self, pk: Any, query: dict = None) -> APIResourceResponse:
         return self.delete(pk=pk, query=query)

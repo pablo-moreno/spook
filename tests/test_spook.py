@@ -1,9 +1,14 @@
+import pytest
 from django.db import models
 from unittest.mock import patch
+
+from rest_framework.exceptions import ValidationError
+
 from spook.resources import APIResource
-from spook.managers import DatabaseDataManager
 from rest_framework import serializers
 
+from spook.validators import InputValidator
+from spook.utils import pluralize, get_model_slug
 from .utils import MockedResponse, ModelMixinTestCase
 
 
@@ -18,6 +23,16 @@ PRODUCTS = [
     },
 ]
 
+CREATED_PRODUCT = {
+    'id': 3,
+    'name': 'The Elder Scrolls V',
+}
+
+UPDATED_PRODUCT = {
+    'id': 3,
+    'name': 'The Elder Scrolls V: Skyrim',
+}
+
 
 class Product(models.Model):
     name = models.CharField(max_length=48)
@@ -29,15 +44,13 @@ class ProductSerializer(serializers.ModelSerializer):
         fields = ['id', 'name']
 
 
-class ProductManager(DatabaseDataManager):
-    model = Product
-    serializer = ProductSerializer
-    primary_key_field_name = 'id'
+class ProductValidator(InputValidator):
+    serializer_class = ProductSerializer
 
 
 class ProductService(APIResource):
     api_url = 'http://external/api'
-    manager = ProductManager
+    validator = ProductValidator
 
 
 def get_mocked_products(*args, **kwargs):
@@ -52,50 +65,66 @@ def retrieve_product(*args, **kwargs):
     )
 
 
+def create_product(*args, **kwargs):
+    return MockedResponse(
+        data=CREATED_PRODUCT,
+        status_code=201,
+    )
+
+
+def update_product(*args, **kwargs):
+    return MockedResponse(
+        data=UPDATED_PRODUCT,
+    )
+
+
 class TestAPIResource(ModelMixinTestCase):
     mixins = [Product, ]
 
     def setUp(self):
         self.product_service = ProductService()
 
-    @patch('requests.get', get_mocked_products)
+    def test_get_model_slug(self):
+        assert get_model_slug(Product) == 'products'
+
+    @patch('spook.resources.requests.get', get_mocked_products)
     def test_list_products(self):
         response = self.product_service.list()
         assert response.status == 200
-        queryset = response.queryset
-        data = queryset.data
-        assert data[0]['name'] == 'Star Wars Collection'
+        data = response.data
+        assert data[0]['name'] == PRODUCTS[0].get('name')
 
-    @patch('requests.get', get_mocked_products)
-    def test_persistance(self):
-        response = self.product_service.list()
-        assert response.status == 200
-        queryset = response.queryset
-        queryset.persist()
-        assert Product.objects.count() == 2
-
-    @patch('requests.get', get_mocked_products)
-    def test_manager_queryset(self):
-        response = self.product_service.list()
-        assert response.status == 200
-        queryset = response.queryset
-        queryset.persist()
-        persisted_qs = queryset.get_queryset()
-        assert Product.objects.count() == persisted_qs.count()
-
-    @patch('requests.get', get_mocked_products)
-    def test_manager_queryset_as_pk_list(self):
-        response = self.product_service.list()
-        assert response.status == 200
-        queryset = response.queryset
-        queryset.persist()
-        pk_list = queryset.get_queryset(as_pk_list=True)
-        assert Product.objects.count() == len(pk_list)
-        assert pk_list == [1, 2]
-
-    @patch('requests.get', retrieve_product)
+    @patch('spook.resources.requests.get', retrieve_product)
     def test_retrieve_product(self):
         response = self.product_service.retrieve('1')
         assert response.status == 200
-        data = response.queryset.data
-        assert data['name'] == 'Star Wars Collection'
+        data = response.data
+        assert data['name'] == PRODUCTS[0].get('name')
+
+    @patch('spook.resources.requests.post', create_product)
+    def test_create_product(self):
+        response = self.product_service.create(CREATED_PRODUCT)
+        assert response.status == 201
+        data = response.data
+        assert data['name'] == CREATED_PRODUCT.get('name')
+
+    @patch('spook.resources.requests.put', update_product)
+    def test_update_product(self):
+        response = self.product_service.update('3', UPDATED_PRODUCT)
+        assert response.status == 200
+        data = response.data
+        assert data['name'] == UPDATED_PRODUCT.get('name')
+
+    @patch('spook.resources.requests.post', create_product)
+    def test_create_invalid_input(self):
+        with pytest.raises(ValidationError):
+            self.product_service.create({
+                'wrong': 'input'
+            })
+
+    @patch('spook.resources.requests.put', update_product)
+    def test_update_invalid_input(self):
+        with pytest.raises(ValidationError):
+            self.product_service.update(3, {
+                'wrong': 'input'
+            })
