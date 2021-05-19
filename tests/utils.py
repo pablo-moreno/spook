@@ -19,6 +19,19 @@ class MockedResponse(object):
         return self.data
 
 
+class MockedRequest(object):
+    def __init__(self, data=None, query_params=None):
+        if data is None:
+            data = {}
+
+        if query_params is None:
+            query_params = {}
+
+        self.META = dict()
+        self.data = data
+        self.query_params = query_params
+
+
 class ModelMixinTestCase(APITestCase):
     """
     Test Case for abstract mixin models.

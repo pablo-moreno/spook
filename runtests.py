@@ -17,6 +17,7 @@ SETTINGS_DICT = {
         "spook",
         "tests",
     ),
+    "SECRET_KEY": "spook secret",
     # Test cases will override this liberally.
     "ROOT_URLCONF": "",
     "DATABASES": {
@@ -29,6 +30,7 @@ SETTINGS_DICT = {
         "django.contrib.auth.middleware.AuthenticationMiddleware",
     ),
     "SITE_ID": 1,
+    "DEFAULT_AUTO_FIELD": "django.db.models.AutoField",
     "TEMPLATES": [
         {
             "BACKEND": "django.template.backends.django.DjangoTemplates",

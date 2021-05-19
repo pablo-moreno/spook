@@ -3,10 +3,10 @@ from json import JSONDecodeError
 import requests
 from typing import Union, Any, Type
 
-from . import settings
-from .pagination import BasePagination
-from .responses import APIResourceResponse
-from .validators import InputValidator
+from spook import settings
+from spook.pagination import BasePagination
+from spook.responses import APIResourceResponse
+from spook.validators import InputValidator
 
 
 class APIResource(object):
@@ -19,10 +19,10 @@ class APIResource(object):
     pagination_class: Type[BasePagination] = None
     validator: Type[InputValidator] = None
 
-    def __init__(self):
-        self.token = None
-        self.headers = dict()
-        self.http = requests
+    def __init__(self, token: str = None, http=requests):
+        self.token = token
+        self.headers = {}
+        self.http = http
 
     def get_token(self) -> str:
         return self.token
@@ -63,7 +63,7 @@ class APIResource(object):
 
         return data
 
-    def map_response(self, data: Union[str, dict, list]) -> Union[str, dict, list]:
+    def map_response(self, data: Union[str, dict, list], action='get') -> Union[str, dict, list]:
         """
             Maps the response to a custom format
         """
@@ -85,7 +85,23 @@ class APIResource(object):
         return pagination_class(data=data).get_paginated_response()
 
     def validate(self, data: dict) -> dict:
+        """
+            Performs input validation
+        """
         return self.validator().validate(data)
+
+    def get(self, url: str, **params) -> APIResourceResponse:
+        """
+            Performs a GET request to a server URL
+        :param url: The URL
+        :param params: Additional query params
+        :return: JSON response as a dict
+        """
+        response = self.http.get(url, headers=self.get_headers(), params=params)
+        data = self.get_response_data(response)
+        data = self.map_response(data, action='get')
+
+        return APIResourceResponse(data=data, status=response.status_code)
 
     def list(self, **params) -> APIResourceResponse:
         """
@@ -108,19 +124,6 @@ class APIResource(object):
 
         return self.get(url, **params)
 
-    def get(self, url: str, **params) -> APIResourceResponse:
-        """
-            Performs a GET request to a server URL
-        :param url: The URL
-        :param params: Additional query params
-        :return: JSON response as a dict
-        """
-        response = self.http.get(url, headers=self.get_headers(), params=params)
-        data = self.get_response_data(response)
-        data = self.map_response(data)
-
-        return APIResourceResponse(data=data, status=response.status_code)
-
     def post(self, data: dict, query: dict = None) -> APIResourceResponse:
         """
             Performs a POST request to the server
@@ -131,7 +134,7 @@ class APIResource(object):
         validated_data = self.validate(data)
         response = self.http.post(self.get_url(), data=validated_data, headers=self.get_headers(), params=query)
         data = self.get_response_data(response)
-        data = self.map_response(data)
+        data = self.map_response(data, action='create')
 
         return APIResourceResponse(data=data, status=response.status_code)
 
@@ -149,7 +152,7 @@ class APIResource(object):
         self.validate(data)
         response = self.http.put(self.get_url(pk), data=data, headers=self.get_headers(), params=query)
         data = self.get_response_data(response)
-        data = self.map_response(data)
+        data = self.map_response(data, action='update')
 
         return APIResourceResponse(data=data, status=response.status_code)
 
@@ -165,7 +168,7 @@ class APIResource(object):
         """
         response = self.http.delete(self.get_url(pk), headers=self.get_headers(), params=query)
         data = self.get_response_data(response)
-        data = self.map_response(data)
+        data = self.map_response(data, action='delete')
 
         return APIResourceResponse(data=data, status=response.status_code)
 

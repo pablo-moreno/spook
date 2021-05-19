@@ -12,6 +12,7 @@ django = ">= 1.11.0"
 djangorestframework = "^3.11.0"
 requests = "^2.24.0"
 coverage = "^5.3"
+djangorestframework-jwt = "^1.11.0"
 
 [tool.poetry.dev-dependencies]
 wheel = "^0.34.2"

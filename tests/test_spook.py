@@ -4,6 +4,7 @@ from unittest.mock import patch
 from rest_framework.exceptions import ValidationError
 
 from spook.utils import get_model_slug
+from spook.views import *
 from tests.utils import ModelMixinTestCase
 from tests.mocks import *
 
@@ -12,7 +13,7 @@ class TestAPIResource(ModelMixinTestCase):
     mixins = [Product, ]
 
     def setUp(self):
-        self.product_service = ProductService()
+        self.product_service = ProductResource()
 
     def test_get_model_slug(self):
         assert get_model_slug(Product) == 'products'
@@ -82,3 +83,42 @@ class TestAPIResource(ModelMixinTestCase):
         response = self.product_service.create({'name': 'Pablo', 'age': -2})
         assert response.status == 403
         assert response.data == 'You are not allowed to perform this action'
+
+
+class ListCreateProductResourceView(APIResourceListCreateView):
+    resource = ProductResource
+
+    def get_token(self, request):
+        return ''
+
+
+@patch('spook.resources.requests.get', get_mocked_products)
+def test_list_view_products(self):
+    view = ListCreateProductResourceView()
+    response = view.list(MockedRequest())
+    assert response.status_code == 200
+    assert response.data == PRODUCTS
+
+
+@patch('spook.resources.requests.get', retrieve_product)
+def test_retrieve_view_products(self):
+    view = APIResourceRetrieveUpdateDestroyView()
+    response = view.get(MockedRequest(), pk=1)
+    assert response.status_code == 200
+    assert response.data == PRODUCTS['results'][0]
+
+
+@patch('spook.resources.requests.post', create_product)
+def test_create_view_product(self):
+    view = ListCreateProductResourceView()
+    response = view.create(MockedRequest(data={'name': 'The Elder Scrolls V'}))
+    assert response.status_code == 201
+    assert response.data == CREATED_PRODUCT
+
+
+@patch('spook.resources.requests.put', update_product)
+def test_update_view_product(self):
+    view = APIResourceRetrieveUpdateDestroyView()
+    response = view.update(MockedRequest(data={'name': 'The Elder Scrolls V: Skyrim'}), pk=3)
+    assert response.status_code == 201
+    assert response.data == CREATED_PRODUCT

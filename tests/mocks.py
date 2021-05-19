@@ -3,7 +3,7 @@ from rest_framework import serializers
 
 from spook.resources import APIResource
 from spook.validators import InputValidator
-from tests.utils import MockedResponse
+from tests.utils import MockedResponse, MockedRequest
 
 
 class Product(models.Model):
@@ -20,7 +20,7 @@ class ProductValidator(InputValidator):
     serializer_class = ProductSerializer
 
 
-class ProductService(APIResource):
+class ProductResource(APIResource):
     api_url = 'http://external/api'
     validator = ProductValidator
 
