@@ -1,7 +1,23 @@
-class Pagination(object):
-    pagination_query_param = 'page'
+class BasePagination(object):
+    def __init__(self, data: dict):
+        self.data = data
 
-    def paginate(self, data: list) -> dict:
+    def get_next(self) -> str:
+        raise NotImplementedError
+
+    def get_previous(self) -> str:
+        raise NotImplementedError
+
+    def get_count(self) -> int:
+        raise NotImplementedError
+
+    def get_results(self) -> str:
+        raise NotImplementedError
+
+    def get_paginated_response(self) -> dict:
         return {
-            'results': data,
+            'next': self.get_next(),
+            'previous': self.get_previous(),
+            'count': self.get_count(),
+            'results': self.get_results(),
         }

@@ -1,11 +1,8 @@
-import warnings
-
 import requests
-from rest_framework.serializers import Serializer
-from typing import Union, Any, Type, List
+from typing import Union, Any, Type
 
 from . import settings
-from .pagination import Pagination
+from .pagination import BasePagination
 from .responses import APIResourceResponse
 from .validators import InputValidator
 
@@ -17,7 +14,7 @@ class APIResource(object):
     api_url: str = settings.EXTERNAL_API_URL
     authorization_header: str = settings.AUTHORIZATION_HEADER
     authorization_header_name: str = settings.AUTHORIZATION_HEADER_NAME
-    pagination_class: Type[Pagination] = None
+    pagination_class: Type[BasePagination] = None
     validator: Type[InputValidator] = None
 
     def __init__(self):
@@ -54,20 +51,25 @@ class APIResource(object):
             return headers
         return self.headers
 
-    def get_response_data(self, response):
-        if response.status_code not in range(200, 400):
-            raise Exception(f'Error {response.status_code}')
+    def get_response_data(self, response) -> Union[dict, str]:
+        try:
+            response_data = response.json()
+        except Exception as e:
+            print(str(e))
+            response_data = response.content
 
-        data, is_list = self.map_response(response.json())
+        data = self.map_response(response_data)
 
         return data
 
-    def map_response(self, data: Union[dict, list]) -> (Union[dict, list], bool):
+    def map_response(self, data: Union[str, dict, list]) -> Union[str, dict, list]:
         """
             Maps the response to a custom format
         """
-        is_list = isinstance(data, list)
-        return data, is_list
+        if isinstance(data, str):
+            return data
+
+        return data
 
     def get_paginated_response(self, data: Union[dict, list]) -> Union[dict, list]:
         pagination_class = self.get_pagination_class()
@@ -75,14 +77,11 @@ class APIResource(object):
         if not pagination_class:
             return data
 
-        data, is_list = self.map_response(data)
-
-        if not is_list:
-            return data
+        data = self.map_response(data)
 
         pagination_class = self.get_pagination_class()
 
-        return pagination_class().paginate(data)
+        return pagination_class(data=data).get_paginated_response()
 
     def validate(self, data: dict) -> dict:
         return self.validator().validate(data)
@@ -117,6 +116,7 @@ class APIResource(object):
         """
         response = self.http.get(url, headers=self.get_headers(), params=params)
         data = self.get_response_data(response)
+        data = self.map_response(data)
 
         return APIResourceResponse(data=data, status=response.status_code)
 
@@ -130,6 +130,7 @@ class APIResource(object):
         validated_data = self.validate(data)
         response = self.http.post(self.get_url(), data=validated_data, headers=self.get_headers(), params=query)
         data = self.get_response_data(response)
+        data = self.map_response(data)
 
         return APIResourceResponse(data=data, status=response.status_code)
 
@@ -147,6 +148,7 @@ class APIResource(object):
         self.validate(data)
         response = self.http.put(self.get_url(pk), data=data, headers=self.get_headers(), params=query)
         data = self.get_response_data(response)
+        data = self.map_response(data)
 
         return APIResourceResponse(data=data, status=response.status_code)
 
@@ -162,6 +164,7 @@ class APIResource(object):
         """
         response = self.http.delete(self.get_url(pk), headers=self.get_headers(), params=query)
         data = self.get_response_data(response)
+        data = self.map_response(data)
 
         return APIResourceResponse(data=data, status=response.status_code)
 
