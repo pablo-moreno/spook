@@ -56,6 +56,9 @@ resource = MyResource()
 # List resources
 resource.list()
 
+# Retrieve a single resource
+resource.retrieve(pk=1)
+
 # Create resource
 resource.create({'name': 'Pablo', 'age': 28})
 
@@ -64,4 +67,27 @@ resource.update(pk=1, data={'name': 'Pablo Moreno'})
 
 # Delete resource
 resource.delete(pk=1)
+```
+
+There are also some views available
+
+```python
+from spook.views import (
+    APIResourceRetrieveView, APIResourceListView, APIResourceCreateView, APIResourcePutView,
+    APIResourceRetrieveUpdateView, APIResourceRetrieveUpdateDestroyView, APIResourceListCreateView,
+)
+
+
+class ListCreateProductResourceView(APIResourceListCreateView):
+    resource = ProductResource
+
+    def get_token(self, request):
+        return ''  # Wee need to override get_token()
+
+
+class RetrieveUpdateDestroyProductResourceView(APIResourceRetrieveUpdateDestroyView):
+    resource = ProductResource
+
+    def get_token(self, request):
+        return ''
 ```
