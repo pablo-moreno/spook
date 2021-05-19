@@ -5,6 +5,29 @@ from spook.resources import APIResource
 from spook.validators import InputValidator
 from tests.utils import MockedResponse
 
+
+class Product(models.Model):
+    name = models.CharField(max_length=48)
+
+
+class ProductSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Product
+        fields = ['id', 'name']
+
+
+class ProductValidator(InputValidator):
+    serializer_class = ProductSerializer
+
+
+class ProductService(APIResource):
+    api_url = 'http://external/api'
+    validator = ProductValidator
+
+    def get_token(self) -> str:
+        return 'my-awesome-token'
+
+
 PRODUCTS = {
     'count': 2,
     'next': None,
@@ -30,25 +53,6 @@ UPDATED_PRODUCT = {
     'id': 3,
     'name': 'The Elder Scrolls V: Skyrim',
 }
-
-
-class Product(models.Model):
-    name = models.CharField(max_length=48)
-
-
-class ProductSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Product
-        fields = ['id', 'name']
-
-
-class ProductValidator(InputValidator):
-    serializer_class = ProductSerializer
-
-
-class ProductService(APIResource):
-    api_url = 'http://external/api'
-    validator = ProductValidator
 
 
 def get_mocked_products(*args, **kwargs):

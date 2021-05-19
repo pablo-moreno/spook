@@ -47,7 +47,7 @@ class TestAPIResource(ModelMixinTestCase):
 
     @patch('spook.resources.requests.delete', delete_product)
     def test_delete_product(self):
-        response = self.product_service.delete('3')
+        response = self.product_service.destroy('3')
         assert response.status == 204
         assert response.data == ''
 
