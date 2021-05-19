@@ -1,3 +1,5 @@
+from json import JSONDecodeError
+
 import requests
 from typing import Union, Any, Type
 
@@ -54,8 +56,7 @@ class APIResource(object):
     def get_response_data(self, response) -> Union[dict, str]:
         try:
             response_data = response.json()
-        except Exception as e:
-            print(str(e))
+        except (JSONDecodeError, Exception) as e:
             response_data = response.content
 
         data = self.map_response(response_data)

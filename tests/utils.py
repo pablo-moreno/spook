@@ -1,3 +1,5 @@
+from json import JSONDecodeError
+
 from django.db import connection
 from django.db.models.base import ModelBase
 from django.test import TestCase
@@ -8,8 +10,12 @@ class MockedResponse(object):
     def __init__(self, data, status_code=200):
         self.data = data
         self.status_code = status_code
+        self.content = data
 
     def json(self):
+        if isinstance(self.data, str):
+            raise JSONDecodeError
+
         return self.data
 
 

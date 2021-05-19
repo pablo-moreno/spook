@@ -45,6 +45,12 @@ class TestAPIResource(ModelMixinTestCase):
         data = response.data
         assert data['name'] == UPDATED_PRODUCT.get('name')
 
+    @patch('spook.resources.requests.delete', delete_product)
+    def test_delete_product(self):
+        response = self.product_service.delete('3')
+        assert response.status == 204
+        assert response.data == ''
+
     @patch('spook.resources.requests.post', create_product)
     def test_create_invalid_input(self):
         with pytest.raises(ValidationError):

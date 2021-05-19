@@ -67,6 +67,10 @@ def update_product(*args, **kwargs):
     return MockedResponse(data=UPDATED_PRODUCT)
 
 
+def delete_product(*args, **kwargs):
+    return MockedResponse(data='', status_code=204)
+
+
 def server_error(*args, **kwargs):
     return MockedResponse(data='Internal Server Error', status_code=500)
 
