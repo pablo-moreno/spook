@@ -11,8 +11,9 @@ from spook.validators import InputValidator
 
 class APIResource(object):
     """
-        API resource class to perform requests to an external API.
+    API resource class to perform requests to an external API.
     """
+
     api_url: str = settings.EXTERNAL_API_URL
     authorization_header: str = settings.AUTHORIZATION_HEADER
     authorization_header_name: str = settings.AUTHORIZATION_HEADER_NAME
@@ -32,22 +33,22 @@ class APIResource(object):
 
     def get_url(self, *url_params) -> str:
         """
-            Returns the url based on the url params
+        Returns the url based on the url params
         """
         params = (self.api_url, *url_params)
-        return '/'.join([str(param) for param in params if param != ''])
+        return "/".join([str(param) for param in params if param != ""])
 
     def get_pagination_class(self):
         return self.pagination_class
 
     def get_headers(self) -> dict:
         """
-            Returns the headers to perform the request to the server
+        Returns the headers to perform the request to the server
         """
         token = self.get_token()
         if token:
             headers = {
-                self.authorization_header_name: f'{self.authorization_header} {token}',
+                self.authorization_header_name: f"{self.authorization_header} {token}",
                 **self.headers,
             }
             return headers
@@ -63,9 +64,11 @@ class APIResource(object):
 
         return data
 
-    def map_response(self, data: Union[str, dict, list], action='get') -> Union[str, dict, list]:
+    def map_response(
+        self, data: Union[str, dict, list], action="get"
+    ) -> Union[str, dict, list]:
         """
-            Maps the response to a custom format
+        Maps the response to a custom format
         """
         if isinstance(data, str):
             return data
@@ -86,7 +89,7 @@ class APIResource(object):
 
     def validate(self, data: dict) -> dict:
         """
-            Performs input validation
+        Performs input validation
         """
         return self.validator().validate(data)
 
@@ -99,7 +102,7 @@ class APIResource(object):
         """
         response = self.http.get(url, headers=self.get_headers(), params=params)
         data = self.get_response_data(response)
-        data = self.map_response(data, action='get')
+        data = self.map_response(data, action="get")
 
         return APIResourceResponse(data=data, status=response.status_code)
 
@@ -132,9 +135,14 @@ class APIResource(object):
         :return: JSON response as a dict
         """
         validated_data = self.validate(data)
-        response = self.http.post(self.get_url(), data=validated_data, headers=self.get_headers(), params=query)
+        response = self.http.post(
+            self.get_url(),
+            data=validated_data,
+            headers=self.get_headers(),
+            params=query,
+        )
         data = self.get_response_data(response)
-        data = self.map_response(data, action='create')
+        data = self.map_response(data, action="create")
 
         return APIResourceResponse(data=data, status=response.status_code)
 
@@ -150,9 +158,11 @@ class APIResource(object):
         :return: JSON response as a dict
         """
         self.validate(data)
-        response = self.http.put(self.get_url(pk), data=data, headers=self.get_headers(), params=query)
+        response = self.http.put(
+            self.get_url(pk), data=data, headers=self.get_headers(), params=query
+        )
         data = self.get_response_data(response)
-        data = self.map_response(data, action='update')
+        data = self.map_response(data, action="update")
 
         return APIResourceResponse(data=data, status=response.status_code)
 
@@ -166,9 +176,11 @@ class APIResource(object):
         :param query: Query params
         :return: JSON response as a dict
         """
-        response = self.http.delete(self.get_url(pk), headers=self.get_headers(), params=query)
+        response = self.http.delete(
+            self.get_url(pk), headers=self.get_headers(), params=query
+        )
         data = self.get_response_data(response)
-        data = self.map_response(data, action='delete')
+        data = self.map_response(data, action="delete")
 
         return APIResourceResponse(data=data, status=response.status_code)
 

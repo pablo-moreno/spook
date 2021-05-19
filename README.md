@@ -2,6 +2,7 @@
 
 ![PyPI](https://img.shields.io/pypi/v/spook?style=flat-square)
 [![codecov](https://codecov.io/gh/pablo-moreno/spook/branch/master/graph/badge.svg?token=6ZAHAHZG7Z)](https://codecov.io/gh/pablo-moreno/spook/)
+[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 
 Library to interconnect multiple external HTTP APIs as Http Services
 

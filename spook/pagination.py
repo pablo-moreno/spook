@@ -16,8 +16,8 @@ class BasePagination(object):
 
     def get_paginated_response(self) -> dict:
         return {
-            'next': self.get_next(),
-            'previous': self.get_previous(),
-            'count': self.get_count(),
-            'results': self.get_results(),
+            "next": self.get_next(),
+            "previous": self.get_previous(),
+            "count": self.get_count(),
+            "results": self.get_results(),
         }

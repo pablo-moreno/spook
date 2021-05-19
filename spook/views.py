@@ -1,7 +1,11 @@
 from typing import Type
 
 from rest_framework.generics import (
-    ListAPIView, RetrieveAPIView, CreateAPIView, UpdateAPIView, DestroyAPIView
+    ListAPIView,
+    RetrieveAPIView,
+    CreateAPIView,
+    UpdateAPIView,
+    DestroyAPIView,
 )
 from rest_framework.response import Response
 from .resources import APIResource
@@ -15,7 +19,9 @@ class APIResourceMixin(object):
 
     def get_resource(self):
         if not self.resource:
-            raise Exception('You have to specify the service property or override .get_resource() function')
+            raise Exception(
+                "You have to specify the service property or override .get_resource() function"
+            )
 
         return self.resource
 
@@ -45,7 +51,9 @@ class APIResourceCreateView(CreateAPIView, APIResourceMixin):
     def create(self, request, *args, **kwargs):
         resource = self.get_resource()
         token = self.get_token(request)
-        response = resource(token=token).post(data=request.data, query=request.query_params)
+        response = resource(token=token).post(
+            data=request.data, query=request.query_params
+        )
 
         return Response(data=response.data, status=response.status)
 
@@ -55,7 +63,9 @@ class APIResourcePutView(UpdateAPIView, APIResourceMixin):
         pk = kwargs.get(self.lookup_field)
         resource = self.get_resource()
         token = self.get_token(request)
-        response = resource(token=token).put(pk=pk, data=request.data, query=request.query_params)
+        response = resource(token=token).put(
+            pk=pk, data=request.data, query=request.query_params
+        )
 
         return Response(data=response.data, status=response.status)
 
@@ -74,7 +84,9 @@ class APIResourceRetrieveUpdateView(APIResourceRetrieveView, APIResourcePutView)
     pass
 
 
-class APIResourceRetrieveUpdateDestroyView(APIResourceRetrieveUpdateView, APIResourceDestroyView):
+class APIResourceRetrieveUpdateDestroyView(
+    APIResourceRetrieveUpdateView, APIResourceDestroyView
+):
     pass
 
 

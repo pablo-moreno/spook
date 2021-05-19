@@ -13,7 +13,7 @@ class Product(models.Model):
 class ProductSerializer(serializers.ModelSerializer):
     class Meta:
         model = Product
-        fields = ['id', 'name']
+        fields = ["id", "name"]
 
 
 class ProductValidator(InputValidator):
@@ -21,37 +21,37 @@ class ProductValidator(InputValidator):
 
 
 class ProductResource(APIResource):
-    api_url = 'http://external/api'
+    api_url = "http://external/api"
     validator = ProductValidator
 
     def get_token(self) -> str:
-        return 'my-awesome-token'
+        return "my-awesome-token"
 
 
 PRODUCTS = {
-    'count': 2,
-    'next': None,
-    'previous': None,
-    'results': [
+    "count": 2,
+    "next": None,
+    "previous": None,
+    "results": [
         {
-            'id': 1,
-            'name': 'Star Wars Collection',
+            "id": 1,
+            "name": "Star Wars Collection",
         },
         {
-            'id': 2,
-            'name': 'The Lord Of The Rings Collection',
+            "id": 2,
+            "name": "The Lord Of The Rings Collection",
         },
-    ]
+    ],
 }
 
 CREATED_PRODUCT = {
-    'id': 3,
-    'name': 'The Elder Scrolls V',
+    "id": 3,
+    "name": "The Elder Scrolls V",
 }
 
 UPDATED_PRODUCT = {
-    'id': 3,
-    'name': 'The Elder Scrolls V: Skyrim',
+    "id": 3,
+    "name": "The Elder Scrolls V: Skyrim",
 }
 
 
@@ -60,7 +60,7 @@ def get_mocked_products(*args, **kwargs):
 
 
 def retrieve_product(*args, **kwargs):
-    return MockedResponse(data=PRODUCTS['results'][0])
+    return MockedResponse(data=PRODUCTS["results"][0])
 
 
 def create_product(*args, **kwargs):
@@ -72,17 +72,17 @@ def update_product(*args, **kwargs):
 
 
 def delete_product(*args, **kwargs):
-    return MockedResponse(data='', status_code=204)
+    return MockedResponse(data="", status_code=204)
 
 
 def server_error(*args, **kwargs):
-    return MockedResponse(data='Internal Server Error', status_code=500)
+    return MockedResponse(data="Internal Server Error", status_code=500)
 
 
 def server_validation_error(*args, **kwargs):
     data = {
-        'age': [
-            'This field must be positive.',
+        "age": [
+            "This field must be positive.",
         ]
     }
 
@@ -90,4 +90,6 @@ def server_validation_error(*args, **kwargs):
 
 
 def server_permission_error(*args, **kwargs):
-    return MockedResponse(data='You are not allowed to perform this action', status_code=403)
+    return MockedResponse(
+        data="You are not allowed to perform this action", status_code=403
+    )

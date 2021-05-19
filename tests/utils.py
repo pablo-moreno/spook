@@ -2,7 +2,6 @@ from json import JSONDecodeError
 
 from django.db import connection
 from django.db.models.base import ModelBase
-from django.test import TestCase
 from rest_framework.test import APITestCase
 
 
@@ -40,6 +39,7 @@ class ModelMixinTestCase(APITestCase):
 
     All the credit to: https://stackoverflow.com/a/57586891
     """
+
     mixins = []
     models = []
 
@@ -47,9 +47,7 @@ class ModelMixinTestCase(APITestCase):
     def setUpClass(cls):
         for mixin in cls.mixins:
             model = ModelBase(
-                "__Test" + mixin.__name__,
-                (mixin, ),
-                {'__module__': mixin.__module__}
+                "__Test" + mixin.__name__, (mixin,), {"__module__": mixin.__module__}
             )
 
             # Use schema_editor to create schema
