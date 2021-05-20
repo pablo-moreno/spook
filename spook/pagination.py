@@ -11,7 +11,7 @@ class BasePagination(object):
     def get_count(self) -> int:
         raise NotImplementedError
 
-    def get_results(self) -> str:
+    def get_results(self) -> list:
         raise NotImplementedError
 
     def get_paginated_response(self) -> dict:
@@ -21,3 +21,17 @@ class BasePagination(object):
             "count": self.get_count(),
             "results": self.get_results(),
         }
+
+
+class DefaultPagination(BasePagination):
+    def get_next(self) -> str:
+        return self.data.get("next", '')
+
+    def get_previous(self) -> str:
+        return self.data.get("next", '')
+
+    def get_count(self) -> int:
+        return self.data.get("count", 0)
+
+    def get_results(self) -> list:
+        return self.data.get("results", [])

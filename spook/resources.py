@@ -4,7 +4,7 @@ import requests
 from typing import Union, Any, Type
 
 from spook import settings
-from spook.pagination import BasePagination
+from spook.pagination import BasePagination, DefaultPagination
 from spook.responses import APIResourceResponse
 from spook.validators import InputValidator
 
@@ -17,7 +17,7 @@ class APIResource(object):
     api_url: str = settings.EXTERNAL_API_URL
     authorization_header: str = settings.AUTHORIZATION_HEADER
     authorization_header_name: str = settings.AUTHORIZATION_HEADER_NAME
-    pagination_class: Type[BasePagination] = None
+    pagination_class: Type[BasePagination] = DefaultPagination
     validator: Type[InputValidator] = None
 
     def __init__(
@@ -92,15 +92,13 @@ class APIResource(object):
 
         return data
 
-    def get_paginated_response(self, data: Union[dict, list]) -> Union[dict, list]:
+    def get_paginated_response(
+        self, data: Union[str, dict, list]
+    ) -> Union[str, dict, list]:
         pagination_class = self.get_pagination_class()
 
-        if not pagination_class:
+        if not pagination_class or isinstance(data, str):
             return data
-
-        data = self.map_response(data)
-
-        pagination_class = self.get_pagination_class()
 
         return pagination_class(data=data).get_paginated_response()
 
@@ -131,7 +129,12 @@ class APIResource(object):
         """
         url = self.get_url()
 
-        return self.get(url, **params)
+        response = self.http.get(url, headers=self.get_headers(), params=params)
+        data = self.get_response_data(response)
+        data = self.map_response(data, action="get")
+
+        data = self.get_paginated_response(data)
+        return APIResourceResponse(data=data, status=response.status_code)
 
     def retrieve(self, pk: Any, **params) -> APIResourceResponse:
         """
