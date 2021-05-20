@@ -28,7 +28,7 @@ class DefaultPagination(BasePagination):
         return self.data.get("next", '')
 
     def get_previous(self) -> str:
-        return self.data.get("next", '')
+        return self.data.get("previous", '')
 
     def get_count(self) -> int:
         return self.data.get("count", 0)
