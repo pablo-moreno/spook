@@ -9,3 +9,7 @@ omit =
   */**/tests/**
   */src/*
   */wsgi.py
+
+[report]
+exclude_lines =
+    raise NotImplementedError
