@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "spook"
-version = "3.1.2"
+version = "3.1.3"
 description = "Django Rest Framework library to interconnect external APIs"
 authors = ["Pablo Moreno <pablomoreno.inf@gmail.com>"]
 license = "MIT"
