@@ -7,6 +7,7 @@ from rest_framework.test import APITestCase
 
 class ListCreateProductResourceView(APIResourceListCreateView):
     resource = ProductResource
+    serializer_class = ProductSerializer
 
     def get_token(self, request):
         return ""
@@ -14,6 +15,7 @@ class ListCreateProductResourceView(APIResourceListCreateView):
 
 class RetrieveUpdateDestroyProductResourceView(APIResourceRetrieveUpdateDestroyView):
     resource = ProductResource
+    serializer_class = ProductSerializer
 
     def get_token(self, request):
         return ""

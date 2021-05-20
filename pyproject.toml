@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "spook"
-version = "3.1.0"
+version = "3.1.1"
 description = "Django Rest Framework library to interconnect external APIs"
 authors = ["Pablo Moreno <pablomoreno.inf@gmail.com>"]
 license = "MIT"
@@ -9,7 +9,7 @@ readme = "README.md"
 [tool.poetry.dependencies]
 python = ">=3.7,<4"
 django = ">= 1.11.0"
-djangorestframework = "^3.11.0"
+djangorestframework = "^3.3.1"
 requests = "^2.24.0"
 coverage = "^5.3"
 djangorestframework-jwt = "^1.11.0"

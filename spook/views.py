@@ -9,6 +9,7 @@ from rest_framework.generics import (
 )
 from rest_framework.response import Response
 from .resources import APIResource
+from .validators import InputValidator
 
 
 class APIResourceMixin(object):
@@ -25,13 +26,27 @@ class APIResourceMixin(object):
 
         return self.resource
 
+    def get_validator(self):
+        serializer = self.get_serializer_class()
+
+        class Validator(InputValidator):
+            serializer_class = serializer
+
+        return Validator
+
 
 class APIResourceListView(ListAPIView, APIResourceMixin):
     def list(self, request, *args, **kwargs):
         resource = self.get_resource()
         token = self.get_token(request)
         params = request.query_params
-        response = resource(token=token).list(**params)
+        serializer = self.get_serializer_class()
+        context = {
+            "request": request,
+        }
+        response = resource(
+            token=token, validator=self.get_validator(), context=context
+        ).list(**params)
 
         return Response(data=response.data, status=response.status)
 
@@ -42,7 +57,12 @@ class APIResourceRetrieveView(RetrieveAPIView, APIResourceMixin):
         resource = self.get_resource()
         token = self.get_token(request)
         params = request.query_params
-        response = resource(token=token).retrieve(pk, **params)
+        context = {
+            "request": request,
+        }
+        response = resource(
+            token=token, validator=self.get_validator(), context=context
+        ).retrieve(pk, **params)
 
         return Response(data=response.data, status=response.status)
 
@@ -51,9 +71,12 @@ class APIResourceCreateView(CreateAPIView, APIResourceMixin):
     def create(self, request, *args, **kwargs):
         resource = self.get_resource()
         token = self.get_token(request)
-        response = resource(token=token).post(
-            data=request.data, query=request.query_params
-        )
+        context = {
+            "request": request,
+        }
+        response = resource(
+            token=token, validator=self.get_validator(), context=context
+        ).post(data=request.data, query=request.query_params)
 
         return Response(data=response.data, status=response.status)
 
@@ -63,9 +86,12 @@ class APIResourcePutView(UpdateAPIView, APIResourceMixin):
         pk = kwargs.get(self.lookup_field)
         resource = self.get_resource()
         token = self.get_token(request)
-        response = resource(token=token).put(
-            pk=pk, data=request.data, query=request.query_params
-        )
+        context = {
+            "request": request,
+        }
+        response = resource(
+            token=token, validator=self.get_validator(), context=context
+        ).put(pk=pk, data=request.data, query=request.query_params)
 
         return Response(data=response.data, status=response.status)
 
@@ -75,7 +101,12 @@ class APIResourceDestroyView(DestroyAPIView, APIResourceMixin):
         pk = kwargs.get(self.lookup_field)
         resource = self.get_resource()
         token = self.get_token(request)
-        response = resource(token=token).delete(pk=pk, query=request.query_params)
+        context = {
+            "request": request,
+        }
+        response = resource(
+            token=token, validator=self.get_validator(), context=context
+        ).delete(pk=pk, query=request.query_params)
 
         return Response(data=response.data, status=response.status)
 

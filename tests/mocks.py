@@ -21,7 +21,7 @@ class ProductValidator(InputValidator):
 
 
 class ProductResource(APIResource):
-    api_url = "http://external/api"
+    api_url = "http://example.com/api/1.0/products/"
     validator = ProductValidator
 
     def get_token(self) -> str:

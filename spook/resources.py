@@ -20,22 +20,39 @@ class APIResource(object):
     pagination_class: Type[BasePagination] = None
     validator: Type[InputValidator] = None
 
-    def __init__(self, token: str = None, http=requests):
+    def __init__(
+        self,
+        token: str = None,
+        http=requests,
+        validator: Type[InputValidator] = None,
+        context: dict = None,
+    ):
+        if context is None:
+            context = {"request": None}
+
         self.token = token
         self.headers = {}
         self.http = http
+        self.context = context
+
+        if validator is not None:
+            self.validator = validator
 
     def get_token(self) -> str:
         return self.token
 
-    def set_token(self, token: str):
-        self.token = token
+    def get_api_url(self) -> str:
+        if not self.api_url:
+            raise Exception("You need to specify an api_url or override .get_api_url()")
+
+        return self.api_url
 
     def get_url(self, *url_params) -> str:
         """
         Returns the url based on the url params
         """
-        params = (self.api_url, *url_params)
+        api_url = self.get_api_url()
+        params = (api_url, *url_params)
         return "/".join([str(param) for param in params if param != ""])
 
     def get_pagination_class(self):
