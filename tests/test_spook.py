@@ -66,6 +66,13 @@ class TestAPIResource(ModelMixinTestCase):
         data = response.data
         assert data["name"] == UPDATED_PRODUCT.get("name")
 
+    @patch("spook.resources.requests.patch", update_product)
+    def test_partial_update_product(self):
+        response = self.product_service.update("3", UPDATED_PRODUCT, partial=True)
+        assert response.status == 200
+        data = response.data
+        assert data["name"] == UPDATED_PRODUCT.get("name")
+
     @patch("spook.resources.requests.delete", delete_product)
     def test_delete_product(self):
         response = self.product_service.destroy("3")
@@ -92,7 +99,9 @@ class TestAPIResource(ModelMixinTestCase):
 
     @patch("spook.resources.requests.post", server_validation_error)
     def test_server_validation_error(self):
-        response = self.product_service.create({"name": "The Elder Scrolls V: Skyrim", "price": -2})
+        response = self.product_service.create(
+            {"name": "The Elder Scrolls V: Skyrim", "price": -2}
+        )
         assert response.status == 400
         assert response.data.get("price")[0] == "Invalid field name."
 

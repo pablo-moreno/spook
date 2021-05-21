@@ -65,6 +65,17 @@ class TestAPIResourceViews(APITestCase):
         assert response.status_code == 200
         assert response.data == UPDATED_PRODUCT
 
+    @patch("spook.resources.requests.patch", update_product)
+    def test_partial_update_view_product(self):
+        view = RetrieveUpdateDestroyProductResourceView()
+        response = view.update(
+            MockedRequest(data={"name": "The Elder Scrolls V: Skyrim"}),
+            pk=3,
+            partial=True,
+        )
+        assert response.status_code == 200
+        assert response.data == UPDATED_PRODUCT
+
     @patch("spook.resources.requests.delete", delete_product)
     def test_delete_view_product(self):
         view = RetrieveUpdateDestroyProductResourceView()

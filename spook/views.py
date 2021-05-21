@@ -76,13 +76,14 @@ class APIResourceCreateView(CreateAPIView, APIResourceMixin):
         }
         response = resource(
             token=token, validator=self.get_validator(), context=context
-        ).post(data=request.data, query=request.query_params)
+        ).create(data=request.data, query=request.query_params)
 
         return Response(data=response.data, status=response.status)
 
 
 class APIResourcePutView(UpdateAPIView, APIResourceMixin):
     def update(self, request, *args, **kwargs):
+        partial = kwargs.pop("partial", False)
         pk = kwargs.get(self.lookup_field)
         resource = self.get_resource()
         token = self.get_token(request)
@@ -91,7 +92,7 @@ class APIResourcePutView(UpdateAPIView, APIResourceMixin):
         }
         response = resource(
             token=token, validator=self.get_validator(), context=context
-        ).put(pk=pk, data=request.data, query=request.query_params)
+        ).update(pk=pk, data=request.data, query=request.query_params, partial=partial)
 
         return Response(data=response.data, status=response.status)
 

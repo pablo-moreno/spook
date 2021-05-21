@@ -158,7 +158,7 @@ class APIResource(object):
         :param query: Extra querystring as a dict
         :return: JSON response as a dict
         """
-        validated_data = self.validate(data, action='create')
+        validated_data = self.validate(data, action="create")
         response = self.http.post(
             self.get_url(),
             data=validated_data,
@@ -181,7 +181,7 @@ class APIResource(object):
         :param query: Query params
         :return: JSON response as a dict
         """
-        self.validate(data, action='update')
+        self.validate(data, action="update")
         response = self.http.put(
             self.get_url(pk), data=data, headers=self.get_headers(), params=query
         )
@@ -190,7 +190,29 @@ class APIResource(object):
 
         return APIResourceResponse(data=data, status=response.status_code)
 
-    def update(self, pk: Any, data: dict, query: dict = None) -> APIResourceResponse:
+    def patch(self, pk: Any, data: dict, query: dict = None) -> APIResourceResponse:
+        """
+            Performs a PATCH request to the server
+        :param pk: Primary key of the object to update
+        :param data: Updated data
+        :param query: Query params
+        :return: JSON response as a dict
+        """
+        self.validate(data, action="update")
+        response = self.http.patch(
+            self.get_url(pk), data=data, headers=self.get_headers(), params=query
+        )
+        data = self.get_response_data(response)
+        data = self.map_response(data, action="update")
+
+        return APIResourceResponse(data=data, status=response.status_code)
+
+    def update(
+        self, pk: Any, data: dict, query: dict = None, partial: bool = False
+    ) -> APIResourceResponse:
+        if partial:
+            return self.patch(pk=pk, data=data, query=query)
+
         return self.put(pk=pk, data=data, query=query)
 
     def delete(self, pk: Any, query: dict = None) -> APIResourceResponse:
