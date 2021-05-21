@@ -22,6 +22,6 @@ jobs:
       - name: Setup dependencies
         run: poetry install
       - name: Run tests
-        run: poetry run coverage run runtests.py && poetry run coverage xml
+        run: poetry run pytest --cov=spook
       - name: Upload to codecov
         run: bash <(curl -s https://codecov.io/bash)

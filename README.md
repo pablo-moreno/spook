@@ -98,14 +98,20 @@ class RetrieveUpdateDestroyProductResourceView(APIResourceRetrieveUpdateDestroyV
 
 > We recommend to use a virtual environment
 
-Install poetry
+**Install poetry**
 
 ```python
 pip install poetry
 ```
 
-Run tests
+**Install dependencies**
 
 ```python
-poetry run coverage run runtests.py && poetry run coverage report
+poetry install
+```
+
+**Run tests**
+
+```python
+poetry run pytest --cov=spook
 ```

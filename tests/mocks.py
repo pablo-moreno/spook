@@ -6,13 +6,11 @@ from spook.validators import InputValidator
 from tests.utils import MockedResponse, MockedRequest
 
 
-class Product(models.Model):
-    name = models.CharField(max_length=48)
+class ProductSerializer(serializers.Serializer):
+    id = serializers.IntegerField(read_only=True)
+    name = serializers.CharField()
 
-
-class ProductSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Product
         fields = ["id", "name"]
 
 
