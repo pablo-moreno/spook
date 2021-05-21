@@ -9,7 +9,7 @@ omit =
   */**/tests/**
   */src/*
   */wsgi.py
-  */runtests.py
+  */conftest.py
 
 [report]
 exclude_lines =

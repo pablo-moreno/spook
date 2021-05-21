@@ -10,15 +10,20 @@ from tests.mocks import *
 
 
 class TestAPIResource(ModelMixinTestCase):
-    mixins = [
-        Product,
-    ]
+    mixins = []
 
     def setUp(self):
         self.product_service = ProductResource()
 
     def test_get_model_slug(self):
+        class Product:
+            pass
+
+        class Inventory(object):
+            pass
+
         assert get_model_slug(Product) == "products"
+        assert get_model_slug(Inventory) == "inventories"
 
     def test_raises_resource_api_url_not_provided(self):
         class MyResource(APIResource):
