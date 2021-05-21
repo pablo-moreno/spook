@@ -2,14 +2,13 @@ import pytest
 from unittest.mock import patch
 
 from rest_framework.exceptions import ValidationError
+from rest_framework.test import APITestCase
 
 from spook.utils import get_model_slug
-from spook.views import *
-from tests.utils import ModelMixinTestCase
 from tests.mocks import *
 
 
-class TestAPIResource(ModelMixinTestCase):
+class TestAPIResource(APITestCase):
     mixins = []
 
     def setUp(self):
@@ -29,9 +28,10 @@ class TestAPIResource(ModelMixinTestCase):
         class MyResource(APIResource):
             pass
 
+        e = None
         with pytest.raises(Exception) as e:
             MyResource().list()
-            assert e is not None
+        assert e is not None
 
     @patch("spook.resources.requests.get", get_mocked_products)
     def test_raises_resource_token_not_provided(self):
@@ -86,15 +86,17 @@ class TestAPIResource(ModelMixinTestCase):
 
     @patch("spook.resources.requests.post", create_product)
     def test_create_invalid_input(self):
+        e = None
         with pytest.raises(ValidationError) as e:
             self.product_service.create({"wrong": "input"})
-            assert e is not None
+        assert e is not None
 
     @patch("spook.resources.requests.put", update_product)
     def test_update_invalid_input(self):
+        e = None
         with pytest.raises(ValidationError) as e:
             self.product_service.update(3, {"wrong": "input"})
-            assert e is not None
+        assert e is not None
 
     @patch("spook.resources.requests.get", server_error)
     def test_server_error(self):

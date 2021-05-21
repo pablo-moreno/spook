@@ -30,10 +30,11 @@ class RetrieveUpdateDestroyProductResourceView(APIResourceRetrieveUpdateDestroyV
 class TestAPIResourceViews(APITestCase):
     @patch("spook.resources.requests.get", get_mocked_products)
     def test_no_resource_view(self):
+        e = None
         with pytest.raises(Exception) as e:
             view = NoResourceView()
             view.list(MockedRequest())
-            assert e is not None
+        assert e is not None
 
     @patch("spook.resources.requests.get", get_mocked_products)
     def test_list_view_products(self):
