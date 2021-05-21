@@ -6,7 +6,6 @@ omit =
   */**/management/commands/*
   */**/settings/*
   */**/settings.py
-  */**/tests/**
   */src/*
   */wsgi.py
   */conftest.py

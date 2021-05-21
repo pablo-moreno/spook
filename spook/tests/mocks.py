@@ -1,9 +1,8 @@
-from django.db import models
 from rest_framework import serializers
 
 from spook.resources import APIResource
 from spook.validators import InputValidator
-from tests.utils import MockedResponse, MockedRequest
+from spook.tests.utils import MockedResponse
 
 
 class ProductSerializer(serializers.Serializer):

@@ -1,10 +1,11 @@
-from unittest.mock import patch
-
 import pytest
 
-from tests.mocks import *
-from spook.views import *
+from unittest.mock import patch
 from rest_framework.test import APITestCase
+
+from spook.views import *
+from spook.tests.mocks import *
+from spook.tests.utils import MockedRequest
 
 
 class NoResourceView(APIResourceListCreateView):
