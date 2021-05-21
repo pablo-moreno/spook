@@ -81,8 +81,8 @@ def server_error(*args, **kwargs):
 
 def server_validation_error(*args, **kwargs):
     data = {
-        "age": [
-            "This field must be positive.",
+        "price": [
+            "Invalid field name.",
         ]
     }
 

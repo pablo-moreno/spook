@@ -20,6 +20,24 @@ class TestAPIResource(ModelMixinTestCase):
     def test_get_model_slug(self):
         assert get_model_slug(Product) == "products"
 
+    def test_raises_resource_api_url_not_provided(self):
+        class MyResource(APIResource):
+            pass
+
+        with pytest.raises(Exception) as e:
+            MyResource().list()
+            assert e is not None
+
+    @patch("spook.resources.requests.get", get_mocked_products)
+    def test_raises_resource_token_not_provided(self):
+        class MyResource(APIResource):
+            api_url = "http://example.com/api/1.0/products/"
+
+        response = MyResource().list()
+        assert response.status == 200
+        data = response.data
+        assert data["results"][0]["name"] == PRODUCTS["results"][0].get("name")
+
     @patch("spook.resources.requests.get", get_mocked_products)
     def test_list_products(self):
         response = self.product_service.list()
@@ -56,13 +74,15 @@ class TestAPIResource(ModelMixinTestCase):
 
     @patch("spook.resources.requests.post", create_product)
     def test_create_invalid_input(self):
-        with pytest.raises(ValidationError):
+        with pytest.raises(ValidationError) as e:
             self.product_service.create({"wrong": "input"})
+            assert e is not None
 
     @patch("spook.resources.requests.put", update_product)
     def test_update_invalid_input(self):
-        with pytest.raises(ValidationError):
+        with pytest.raises(ValidationError) as e:
             self.product_service.update(3, {"wrong": "input"})
+            assert e is not None
 
     @patch("spook.resources.requests.get", server_error)
     def test_server_error(self):
@@ -72,19 +92,12 @@ class TestAPIResource(ModelMixinTestCase):
 
     @patch("spook.resources.requests.post", server_validation_error)
     def test_server_validation_error(self):
-        response = self.product_service.create({"name": "Pablo", "age": -2})
+        response = self.product_service.create({"name": "The Elder Scrolls V: Skyrim", "price": -2})
         assert response.status == 400
-        assert response.data.get("age")[0] == "This field must be positive."
+        assert response.data.get("price")[0] == "Invalid field name."
 
     @patch("spook.resources.requests.post", server_permission_error)
     def test_server_permissions_error(self):
-        response = self.product_service.create({"name": "Pablo", "age": -2})
+        response = self.product_service.create({"name": "The Elder Scrolls V: Skyrim"})
         assert response.status == 403
         assert response.data == "You are not allowed to perform this action"
-
-
-class ListCreateProductResourceView(APIResourceListCreateView):
-    resource = ProductResource
-
-    def get_token(self, request):
-        return ""

@@ -1,8 +1,14 @@
 from unittest.mock import patch
 
+import pytest
+
 from tests.mocks import *
 from spook.views import *
 from rest_framework.test import APITestCase
+
+
+class NoResourceView(APIResourceListCreateView):
+    serializer_class = ProductSerializer
 
 
 class ListCreateProductResourceView(APIResourceListCreateView):
@@ -22,6 +28,13 @@ class RetrieveUpdateDestroyProductResourceView(APIResourceRetrieveUpdateDestroyV
 
 
 class TestAPIResourceViews(APITestCase):
+    @patch("spook.resources.requests.get", get_mocked_products)
+    def test_no_resource_view(self):
+        with pytest.raises(Exception) as e:
+            view = NoResourceView()
+            view.list(MockedRequest())
+            assert e is not None
+
     @patch("spook.resources.requests.get", get_mocked_products)
     def test_list_view_products(self):
         view = ListCreateProductResourceView()

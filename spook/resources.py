@@ -59,6 +59,9 @@ class APIResource(object):
     def get_pagination_class(self):
         return self.pagination_class
 
+    def get_validator(self, action: str = None) -> InputValidator:
+        return self.validator()
+
     def get_headers(self) -> dict:
         """
         Returns the headers to perform the request to the server
@@ -103,11 +106,11 @@ class APIResource(object):
 
         return pagination_class(data=data).get_paginated_response()
 
-    def validate(self, data: dict) -> dict:
+    def validate(self, data: dict, action: str = None) -> dict:
         """
         Performs input validation
         """
-        return self.validator().validate(data)
+        return self.get_validator(action=action).validate(data)
 
     def get(self, url: str, **params) -> APIResourceResponse:
         """
@@ -155,7 +158,7 @@ class APIResource(object):
         :param query: Extra querystring as a dict
         :return: JSON response as a dict
         """
-        validated_data = self.validate(data)
+        validated_data = self.validate(data, action='create')
         response = self.http.post(
             self.get_url(),
             data=validated_data,
@@ -178,7 +181,7 @@ class APIResource(object):
         :param query: Query params
         :return: JSON response as a dict
         """
-        self.validate(data)
+        self.validate(data, action='update')
         response = self.http.put(
             self.get_url(pk), data=data, headers=self.get_headers(), params=query
         )
