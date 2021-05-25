@@ -183,7 +183,7 @@ class APIResource(object):
         """
         self.validate(data, action="update")
         response = self.http.put(
-            self.get_url(pk), data=data, headers=self.get_headers(), params=query
+            self.get_url(pk), json=data, headers=self.get_headers(), params=query
         )
         data = self.get_response_data(response)
         data = self.map_response(data, action="update")
@@ -200,7 +200,7 @@ class APIResource(object):
         """
         self.validate(data, action="update")
         response = self.http.patch(
-            self.get_url(pk), data=data, headers=self.get_headers(), params=query
+            self.get_url(pk), json=data, headers=self.get_headers(), params=query
         )
         data = self.get_response_data(response)
         data = self.map_response(data, action="update")

@@ -8,9 +8,7 @@ APP_DIR = os.path.abspath(os.path.dirname(__file__))
 
 SETTINGS_DICT = {
     "BASE_DIR": APP_DIR,
-    "INSTALLED_APPS": (
-        "spook",
-    ),
+    "INSTALLED_APPS": ("spook",),
     "SECRET_KEY": "spook secret",
     "DATABASES": {
         "default": {"ENGINE": "django.db.backends.sqlite3", "NAME": ":memory:"}
