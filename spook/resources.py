@@ -117,6 +117,12 @@ class APIResource(object):
         """
         return self.get_validator(action=action).validate(data)
 
+    def handle_server_errors(self, response):
+        """
+        Error handling
+        """
+        pass
+
     def get(self, url: str, **params) -> APIResourceResponse:
         """
             Performs a GET request to a server URL
@@ -125,6 +131,7 @@ class APIResource(object):
         :return: JSON response as a dict
         """
         response = self.http.get(url, headers=self.get_headers(), params=params)
+        self.handle_server_errors(response)
         data = self.get_response_data(response)
         data = self.map_response(data, action="get", status=response.status_code)
 
@@ -139,6 +146,7 @@ class APIResource(object):
         url = self.get_url()
 
         response = self.http.get(url, headers=self.get_headers(), params=params)
+        self.handle_server_errors(response)
         data = self.get_response_data(response)
         data = self.map_response(data, action="list", status=response.status_code)
 
@@ -170,6 +178,7 @@ class APIResource(object):
             headers=self.get_headers(),
             params=query,
         )
+        self.handle_server_errors(response)
         data = self.get_response_data(response)
         data = self.map_response(data, action="create", status=response.status_code)
 
@@ -190,6 +199,7 @@ class APIResource(object):
         response = self.http.put(
             self.get_url(pk), json=data, headers=self.get_headers(), params=query
         )
+        self.handle_server_errors(response)
         data = self.get_response_data(response)
         data = self.map_response(data, action="update", status=response.status_code)
 
@@ -207,6 +217,7 @@ class APIResource(object):
         response = self.http.patch(
             self.get_url(pk), json=data, headers=self.get_headers(), params=query
         )
+        self.handle_server_errors(response)
         data = self.get_response_data(response)
         data = self.map_response(
             data, action="partial_update", status=response.status_code
@@ -232,6 +243,7 @@ class APIResource(object):
         response = self.http.delete(
             self.get_url(pk), headers=self.get_headers(), params=query
         )
+        self.handle_server_errors(response)
         data = self.get_response_data(response)
         data = self.map_response(data, action="delete", status=response.status_code)
 
