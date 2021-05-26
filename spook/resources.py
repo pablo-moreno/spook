@@ -85,7 +85,10 @@ class APIResource(object):
         return response_data
 
     def map_response(
-        self, data: Union[str, dict, list], action: str = 'get', status: int = 200,
+        self,
+        data: Union[str, dict, list],
+        action: str = "get",
+        status: int = 200,
     ) -> Union[str, dict, list]:
         """
         Maps the response to a custom format
@@ -123,7 +126,7 @@ class APIResource(object):
         """
         response = self.http.get(url, headers=self.get_headers(), params=params)
         data = self.get_response_data(response)
-        data = self.map_response(data, action='get', status=response.status_code)
+        data = self.map_response(data, action="get", status=response.status_code)
 
         return APIResourceResponse(data=data, status=response.status_code)
 
@@ -205,7 +208,9 @@ class APIResource(object):
             self.get_url(pk), json=data, headers=self.get_headers(), params=query
         )
         data = self.get_response_data(response)
-        data = self.map_response(data, action="partial_update", status=response.status_code)
+        data = self.map_response(
+            data, action="partial_update", status=response.status_code
+        )
 
         return APIResourceResponse(data=data, status=response.status_code)
 
