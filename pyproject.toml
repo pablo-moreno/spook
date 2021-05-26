@@ -5,6 +5,7 @@ description = "Django Rest Framework library to interconnect external APIs"
 authors = ["Pablo Moreno <pablomoreno.inf@gmail.com>"]
 license = "MIT"
 readme = "README.md"
+exclude = ["spook/tests/**"]
 
 [tool.poetry.dependencies]
 python = ">=3.7,<4"
