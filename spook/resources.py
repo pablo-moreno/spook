@@ -117,7 +117,7 @@ class APIResource(object):
         """
         return self.get_validator(action=action).validate(data)
 
-    def handle_server_errors(self, response):
+    def handle_server_errors(self, response, data: dict = None):
         """
         Error handling
         """
@@ -178,7 +178,7 @@ class APIResource(object):
             headers=self.get_headers(),
             params=query,
         )
-        self.handle_server_errors(response)
+        self.handle_server_errors(response, data=validated_data)
         data = self.get_response_data(response)
         data = self.map_response(data, action="create", status=response.status_code)
 
@@ -199,7 +199,7 @@ class APIResource(object):
         response = self.http.put(
             self.get_url(pk), json=data, headers=self.get_headers(), params=query
         )
-        self.handle_server_errors(response)
+        self.handle_server_errors(response, data=data)
         data = self.get_response_data(response)
         data = self.map_response(data, action="update", status=response.status_code)
 
@@ -217,7 +217,7 @@ class APIResource(object):
         response = self.http.patch(
             self.get_url(pk), json=data, headers=self.get_headers(), params=query
         )
-        self.handle_server_errors(response)
+        self.handle_server_errors(response, data=data)
         data = self.get_response_data(response)
         data = self.map_response(
             data, action="partial_update", status=response.status_code
