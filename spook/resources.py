@@ -1,3 +1,4 @@
+import enum
 from json import JSONDecodeError
 
 import requests
@@ -81,16 +82,17 @@ class APIResource(object):
         except (JSONDecodeError, Exception) as e:
             response_data = response.content
 
-        data = self.map_response(response_data)
-
-        return data
+        return response_data
 
     def map_response(
-        self, data: Union[str, dict, list], action="get"
+        self, data: Union[str, dict, list], action: str = 'get', status: int = 200,
     ) -> Union[str, dict, list]:
         """
         Maps the response to a custom format
         """
+        if status >= 400:
+            return data
+
         if isinstance(data, str):
             return data
 
@@ -121,7 +123,7 @@ class APIResource(object):
         """
         response = self.http.get(url, headers=self.get_headers(), params=params)
         data = self.get_response_data(response)
-        data = self.map_response(data, action="get")
+        data = self.map_response(data, action='get', status=response.status_code)
 
         return APIResourceResponse(data=data, status=response.status_code)
 
@@ -135,7 +137,7 @@ class APIResource(object):
 
         response = self.http.get(url, headers=self.get_headers(), params=params)
         data = self.get_response_data(response)
-        data = self.map_response(data, action="get")
+        data = self.map_response(data, action="list", status=response.status_code)
 
         data = self.get_paginated_response(data)
         return APIResourceResponse(data=data, status=response.status_code)
@@ -166,7 +168,7 @@ class APIResource(object):
             params=query,
         )
         data = self.get_response_data(response)
-        data = self.map_response(data, action="create")
+        data = self.map_response(data, action="create", status=response.status_code)
 
         return APIResourceResponse(data=data, status=response.status_code)
 
@@ -186,7 +188,7 @@ class APIResource(object):
             self.get_url(pk), json=data, headers=self.get_headers(), params=query
         )
         data = self.get_response_data(response)
-        data = self.map_response(data, action="update")
+        data = self.map_response(data, action="update", status=response.status_code)
 
         return APIResourceResponse(data=data, status=response.status_code)
 
@@ -203,7 +205,7 @@ class APIResource(object):
             self.get_url(pk), json=data, headers=self.get_headers(), params=query
         )
         data = self.get_response_data(response)
-        data = self.map_response(data, action="update")
+        data = self.map_response(data, action="partial_update", status=response.status_code)
 
         return APIResourceResponse(data=data, status=response.status_code)
 
@@ -226,7 +228,7 @@ class APIResource(object):
             self.get_url(pk), headers=self.get_headers(), params=query
         )
         data = self.get_response_data(response)
-        data = self.map_response(data, action="delete")
+        data = self.map_response(data, action="delete", status=response.status_code)
 
         return APIResourceResponse(data=data, status=response.status_code)
 
