@@ -1,6 +1,7 @@
 class BasePagination(object):
-    def __init__(self, data: dict):
+    def __init__(self, data: dict, context: dict = None):
         self.data = data
+        self.context = context
 
     def get_next(self) -> str:
         raise NotImplementedError

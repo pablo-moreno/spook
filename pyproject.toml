@@ -1,11 +1,22 @@
 [tool.poetry]
 name = "spook"
-version = "3.2.5"
+version = "3.2.6"
 description = "Django Rest Framework library to interconnect external APIs"
 authors = ["Pablo Moreno <pablomoreno.inf@gmail.com>"]
 license = "MIT"
 readme = "README.md"
 exclude = ["spook/tests/**"]
+keywords = ["http", "api", "microservices"]
+homepage = "https://github.com/pablo-moreno/spook"
+classifiers = [
+    "Programming Language :: Python :: 3.7",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Development Status :: 5 - Production/Stable",
+    "Framework :: Django :: 2.2",
+    "Framework :: Django :: 3.2",
+]
 
 [tool.poetry.dependencies]
 python = ">=3.7,<4"
