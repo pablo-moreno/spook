@@ -109,7 +109,9 @@ class APIResource(object):
         if not pagination_class or isinstance(data, str):
             return data
 
-        return pagination_class(data=data, context=self.context).get_paginated_response()
+        return pagination_class(
+            data=data, context=self.context
+        ).get_paginated_response()
 
     def validate(self, data: dict, action: str = None) -> dict:
         """
