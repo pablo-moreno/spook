@@ -3,9 +3,20 @@ import pytest
 from unittest.mock import patch
 from rest_framework.test import APITestCase
 
-from spook.views import *
-from spook.tests.mocks import *
+from spook.tests.mocks import (
+    ProductSerializer,
+    ProductResource,
+    get_mocked_products,
+    PRODUCTS,
+    retrieve_product,
+    create_product,
+    CREATED_PRODUCT,
+    update_product,
+    UPDATED_PRODUCT,
+    delete_product,
+)
 from spook.tests.utils import MockedRequest
+from spook.views import APIResourceListCreateView, APIResourceRetrieveUpdateDestroyView
 
 
 class NoResourceView(APIResourceListCreateView):

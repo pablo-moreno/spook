@@ -1,9 +1,5 @@
 from json import JSONDecodeError
 
-from django.db import connection
-from django.db.models.base import ModelBase
-from rest_framework.test import APITestCase
-
 
 class MockedResponse(object):
     def __init__(self, data, status_code=200):

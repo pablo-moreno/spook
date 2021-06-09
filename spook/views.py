@@ -40,7 +40,6 @@ class APIResourceListView(ListAPIView, APIResourceMixin):
         resource = self.get_resource()
         token = self.get_token(request)
         params = request.query_params
-        serializer = self.get_serializer_class()
         context = {
             "request": request,
         }

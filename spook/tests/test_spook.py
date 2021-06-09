@@ -4,8 +4,22 @@ from unittest.mock import patch
 from rest_framework.exceptions import ValidationError
 from rest_framework.test import APITestCase
 
+from spook.resources import APIResource
+from spook.tests.mocks import (
+    ProductResource,
+    get_mocked_products,
+    PRODUCTS,
+    retrieve_product,
+    create_product,
+    CREATED_PRODUCT,
+    update_product,
+    UPDATED_PRODUCT,
+    delete_product,
+    server_error,
+    server_validation_error,
+    server_permission_error,
+)
 from spook.utils import get_model_slug
-from spook.tests.mocks import *
 
 
 class TestAPIResource(APITestCase):

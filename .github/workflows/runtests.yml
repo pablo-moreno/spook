@@ -21,6 +21,8 @@ jobs:
           poetry-version: ${{ matrix.poetry-version }}
       - name: Setup dependencies
         run: poetry install
+      - name: Run linter
+        run: poetry run flake8
       - name: Run tests
         run: poetry run pytest --cov=spook && poetry run coverage xml
       - name: Upload to codecov

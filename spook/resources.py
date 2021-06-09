@@ -1,4 +1,3 @@
-import enum
 from json import JSONDecodeError
 
 import requests
@@ -79,7 +78,7 @@ class APIResource(object):
     def get_response_data(self, response) -> Union[dict, str]:
         try:
             response_data = response.json()
-        except (JSONDecodeError, Exception) as e:
+        except (JSONDecodeError, Exception):
             response_data = response.content
 
         return response_data
@@ -176,7 +175,7 @@ class APIResource(object):
         validated_data = self.validate(data, action="create")
         response = self.http.post(
             self.get_url(),
-            data=validated_data,
+            json=validated_data,
             headers=self.get_headers(),
             params=query,
         )
