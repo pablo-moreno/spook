@@ -18,8 +18,5 @@ class Transformer(object):
 
     def transform(self):
         if type(self.initial_data) == list:
-            return [
-                self.transform_dict(i)
-                for i in self.initial_data
-            ]
+            return [self.transform_dict(i) for i in self.initial_data]
         return self.transform_dict(self.initial_data)
