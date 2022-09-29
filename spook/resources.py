@@ -196,11 +196,11 @@ class APIResource(object):
         :param query: Query params
         :return: JSON response as a dict
         """
-        self.validate(data, action="update")
+        validated_data = self.validate(data, action="update")
         response = self.http.put(
-            self.get_url(pk), json=data, headers=self.get_headers(), params=query
+            self.get_url(pk), json=validated_data, headers=self.get_headers(), params=query
         )
-        self.handle_server_errors(response, data=data)
+        self.handle_server_errors(response, data=validated_data)
         data = self.get_response_data(response)
         data = self.map_response(data, action="update", status=response.status_code)
 
@@ -214,11 +214,11 @@ class APIResource(object):
         :param query: Query params
         :return: JSON response as a dict
         """
-        self.validate(data, action="update")
+        validated_data = self.validate(data, action="update")
         response = self.http.patch(
-            self.get_url(pk), json=data, headers=self.get_headers(), params=query
+            self.get_url(pk), json=validated_data, headers=self.get_headers(), params=query
         )
-        self.handle_server_errors(response, data=data)
+        self.handle_server_errors(response, data=validated_data)
         data = self.get_response_data(response)
         data = self.map_response(
             data, action="partial_update", status=response.status_code
